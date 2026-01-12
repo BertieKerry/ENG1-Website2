@@ -1,0 +1,688 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Main.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">core</a> &gt; <a href="index.source.html" class="el_package">io.github.eng1group9</a> &gt; <span class="el_source">Main.java</span></div><h1>Main.java</h1><pre class="source lang-java linenums">package io.github.eng1group9;
+
+import java.util.List;
+
+import com.badlogic.gdx.ApplicationAdapter;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
+
+import io.github.eng1group9.entities.Dean;
+import io.github.eng1group9.entities.Player;
+import io.github.eng1group9.systems.AchievementSystem;
+import io.github.eng1group9.systems.CollisionSystem;
+import io.github.eng1group9.systems.InputSystem;
+import io.github.eng1group9.systems.RenderingSystem;
+import io.github.eng1group9.systems.ScoreboardSystem;
+import io.github.eng1group9.systems.TimerSystem;
+import io.github.eng1group9.systems.ToastSystem;
+import io.github.eng1group9.systems.TriggerSystem;
+
+/** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
+<span class="nc" id="L23">public class Main extends ApplicationAdapter {</span>
+
+<span class="fc" id="L25">    public enum GameState {</span>
+<span class="fc" id="L26">        NOT_STARTED,</span>
+<span class="fc" id="L27">        PLAYING,</span>
+<span class="fc" id="L28">        PAUSED,</span>
+<span class="fc" id="L29">        WIN,</span>
+<span class="fc" id="L30">        LOSE</span>
+    }
+
+<span class="nc" id="L33">    boolean isFullscreen = false;</span>
+<span class="fc" id="L34">    static GameState gameState = GameState.NOT_STARTED;</span>
+
+<span class="fc" id="L36">    public static boolean chestDoorOpen = false; // Whether the door to the chest room has been opened.</span>
+<span class="fc" id="L37">    public static boolean exitOpen = false; // Whether the exit is open/</span>
+<span class="fc" id="L38">    public static boolean exitOpen2 = false; // Whether exit2 is open</span>
+<span class="fc" id="L39">    public static boolean spikesLowered = false; // Whether the spikes in the chest room have been lowered.</span>
+<span class="fc" id="L40">    public static boolean scrollUsed = false; // Whether the scroll power up has been collected.</span>
+<span class="fc" id="L41">    public static int longboiBonus = 0; // the bonus to add based on whether LongBoi was found.</span>
+<span class="fc" id="L42">    public static int hiddenEventCounter = 0;</span>
+<span class="fc" id="L43">    public static int negativeEventCounter = 0;</span>
+<span class="fc" id="L44">    public static int positiveEventCounter = 0;</span>
+
+<span class="fc" id="L46">    private static TimerSystem timerSystem = new TimerSystem();</span>
+<span class="nc" id="L47">    public boolean showCollision = false;</span>
+
+<span class="fc" id="L49">    public static boolean timeFrozen = false;</span>
+<span class="fc" id="L50">    private static float freezeDuration = 30.0f;</span>
+<span class="fc" id="L51">    private static float freezeTimer = 0f;</span>
+<span class="fc" id="L52">    public static Color freezeOverlayColor = new Color(0.2f, 0.4f, 1.0f, 0.3f);</span>
+
+<span class="fc" id="L54">    public static boolean alcoholActive = false;</span>
+<span class="fc" id="L55">    private static float alcoholDuration = 20.0f; // 20 seconds of effects</span>
+<span class="fc" id="L56">    private static float alcoholTimer = 0f;</span>
+<span class="fc" id="L57">    private static float alcoholWobbleIntensity = 5.0f; // How much screen wobbles</span>
+<span class="fc" id="L58">    private static float alcoholWobbleSpeed = 5.0f;</span>
+<span class="fc" id="L59">    private static final Color[] ALCOHOL_COLORS = {</span>
+        new Color(1.0f, 0.2f, 0.2f, 0.3f), // Red
+        new Color(0.2f, 1.0f, 0.2f, 0.3f), // Green
+        new Color(0.2f, 0.2f, 1.0f, 0.3f), // Blue
+        new Color(1.0f, 1.0f, 0.2f, 0.3f), // Yellow
+        new Color(1.0f, 0.2f, 1.0f, 0.3f), // Magenta
+        new Color(0.2f, 1.0f, 1.0f, 0.3f)  // Cyan
+    };
+
+    private List&lt;Rectangle&gt; worldCollision;
+    final static int LONGBOIBONUSAMOUNT = 201823;
+    final static String TMXPATH = &quot;World/testMap.tmx&quot;;
+    final static String SECONDTMXPATH = &quot;World/mapTwo.tmx&quot;;
+
+    public static Player player;
+<span class="fc" id="L74">    private static boolean playerCaught = false; // Whether the player is currently being held by the Dean.</span>
+<span class="nc" id="L75">    private float postCatchImmunity = 0f;</span>
+    private static final float POSTCATCH = 1.2f;
+<span class="nc" id="L77">    final float INITALPLAYERCAUGHTTIME = 1.2f;</span>
+<span class="nc" id="L78">    private float playerCaughtTime = INITALPLAYERCAUGHTTIME; // how many seconds the Dean will hold the player when caught.</span>
+<span class="fc" id="L79">    static Vector2 playerStartPos = new Vector2(16, 532); // Where the player begins the game, and returns to when caught.</span>
+<span class="nc" id="L80">    final float DEFAULTPLAYERSPEED = 100; // The players speed.</span>
+
+    private static Dean dean;
+<span class="fc" id="L83">    private static boolean deanActive = true;</span>
+<span class="fc" id="L84">    public static boolean entranceDoorOpen = false;</span>
+<span class="fc" id="L85">    public static boolean starCollected = false;</span>
+<span class="nc" id="L86">    final Vector2 DEANSTARTPOS = new Vector2(32, 352); // Where the Dean begins the game, and returns to after catching the player.</span>
+<span class="nc" id="L87">    final float DEFAULTDEANSPEED = 100;</span>
+<span class="nc" id="L88">    final int DEANPUNISHMENT = 30; // The number of seconds the Dean adds to the timer.</span>
+<span class="nc" id="L89">    final Character[] DEANPATH = { // The path the dean will take (D = Down, U = Up, L = Left, R = Right). The path will loop.</span>
+<span class="nc" id="L90">        'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R',</span>
+<span class="nc" id="L91">        'D', 'D', 'D', 'D', 'D', 'D', 'D', 'D',</span>
+<span class="nc" id="L92">        'R', 'R', 'R',</span>
+<span class="nc" id="L93">        'U', 'U', 'U', 'U', 'U', 'U', 'U', 'U', 'U', 'U', 'U', 'U',</span>
+<span class="nc" id="L94">        'L', 'L', 'L',</span>
+<span class="nc" id="L95">        'D', 'D', 'D', 'D',</span>
+<span class="nc" id="L96">        'L', 'L', 'L', 'L', 'L', 'L', 'L', 'L', 'L', 'L', 'L', 'L', 'L', 'L', 'L', 'L', 'L', 'L', 'L'</span>
+    };
+
+    private static Dean teacher1;
+<span class="fc" id="L100">    private static boolean teacher1Active = false;</span>
+<span class="nc" id="L101">    final Vector2 TEACHER1STARTPOSITION = new Vector2(400, 320);</span>
+<span class="nc" id="L102">    final Character[] TEACHER1PATH = { // The path the dean will take (D = Down, U = Up, L = Left, R = Right). The path will loop.</span>
+<span class="nc" id="L103">        'U', 'U', 'U', 'U', 'U', 'U',</span>
+<span class="nc" id="L104">        'D', 'D', 'D', 'D', 'D', 'D'</span>
+    };
+
+    private static Dean teacher2;
+<span class="fc" id="L108">    private static boolean teacher2Active = false;</span>
+<span class="nc" id="L109">    final Vector2 TEACHER2STARTPOSITION = new Vector2(720, 320);</span>
+<span class="nc" id="L110">    final Character[] TEACHER2PATH = { // The path the dean will take (D = Down, U = Up, L = Left, R = Right). The path will loop.</span>
+<span class="nc" id="L111">        'U', 'U', 'U', 'U',</span>
+<span class="nc" id="L112">        'D', 'D', 'D', 'D'</span>
+    };
+
+<span class="nc" id="L115">    final float TEACHERSPEED = 100f; // Speed for all deans / teachers</span>
+
+<span class="fc" id="L117">    final static Color BAD = new Color(1,1,0,1);</span>
+<span class="fc" id="L118">    final static Color GOOD = new Color(0,1,1,1);</span>
+
+    public static Main instance;
+<span class="fc" id="L121">    public static RenderingSystem renderingSystem = new RenderingSystem();</span>
+<span class="fc" id="L122">    public static CollisionSystem collisionSystem = new CollisionSystem();</span>
+<span class="fc" id="L123">    public static InputSystem inputSystem = new InputSystem();</span>
+
+
+    public static ScoreboardSystem scoreboard;
+
+    // Player Score Variables
+<span class="fc" id="L129">    public static StringBuilder playerNameInput = new StringBuilder();</span>
+<span class="fc" id="L130">    public static boolean nameSubmitted = false;</span>
+    public static int score;
+
+    public static AchievementSystem achievementSystem;
+
+    @Override
+    public void create() {
+<span class="nc" id="L137">        renderingSystem.initWorld(TMXPATH, 480, 320);</span>
+<span class="nc" id="L138">        collisionSystem.init(renderingSystem.getMapRenderer().getMap());</span>
+<span class="nc" id="L139">        TriggerSystem.init(TMXPATH);</span>
+<span class="nc" id="L140">        worldCollision = collisionSystem.getWorldCollision();</span>
+<span class="nc" id="L141">        player = new Player(playerStartPos, DEFAULTPLAYERSPEED);</span>
+<span class="nc" id="L142">        dean = new Dean(DEANSTARTPOS, DEFAULTDEANSPEED, DEANPATH);</span>
+
+<span class="nc" id="L144">        teacher1 = new Dean(TEACHER1STARTPOSITION, TEACHERSPEED, TEACHER1PATH);</span>
+<span class="nc" id="L145">        teacher2 = new Dean(TEACHER2STARTPOSITION, TEACHERSPEED, TEACHER2PATH);</span>
+
+<span class="nc" id="L147">        scoreboard = new ScoreboardSystem();</span>
+<span class="nc" id="L148">        achievementSystem = new AchievementSystem();</span>
+
+<span class="nc" id="L150">        togglePause();</span>
+<span class="nc" id="L151">        instance = this;</span>
+<span class="nc" id="L152">    }</span>
+
+    @Override
+    public void render() {
+<span class="nc" id="L156">        inputSystem.handle(player, gameState);</span>
+<span class="nc bnc" id="L157" title="All 2 branches missed.">        if (gameState == GameState.PLAYING) logic();</span>
+<span class="nc" id="L158">        draw();</span>
+<span class="nc" id="L159">    }</span>
+
+    public static void loadNewMap(String mapPath, Vector2 playerStartPosition, boolean removeDean) {
+        try {
+<span class="nc" id="L163">            System.out.println(&quot;Loading new map: &quot; + mapPath);</span>
+
+            // Handle dean deactivation FIRST before any map loading
+<span class="nc bnc" id="L166" title="All 2 branches missed.">            if (removeDean) {</span>
+<span class="nc" id="L167">                deanActive = false;</span>
+<span class="nc" id="L168">                dean.freeze(); // Freeze the dean so they don't move</span>
+<span class="nc" id="L169">                System.out.println(&quot;Dean deactivated&quot;);</span>
+            }
+
+            // Reinitialize the rendering system with the new map
+<span class="nc" id="L173">            renderingSystem.initWorld(SECONDTMXPATH, 480, 320);</span>
+<span class="nc" id="L174">            System.out.println(&quot;Rendering system initialized&quot;);</span>
+
+            // Check if map renderer and map are not null
+<span class="nc bnc" id="L177" title="All 4 branches missed.">            if (renderingSystem.getMapRenderer() == null || renderingSystem.getMapRenderer().getMap() == null) {</span>
+<span class="nc" id="L178">                System.err.println(&quot;ERROR: Map renderer or map is null after initialization!&quot;);</span>
+<span class="nc" id="L179">                return;</span>
+            }
+
+            // Reinitialize collision system with the new map
+<span class="nc" id="L183">            collisionSystem.init(renderingSystem.getMapRenderer().getMap());</span>
+<span class="nc" id="L184">            System.out.println(&quot;Collision system initialized&quot;);</span>
+
+            // Get updated world collision
+<span class="nc" id="L187">            instance.worldCollision = collisionSystem.getWorldCollision();</span>
+
+            // Reinitialize trigger system with the already-loaded map (don't load it again!)
+<span class="nc" id="L190">            TriggerSystem.initFromMap(renderingSystem.getMapRenderer().getMap());</span>
+<span class="nc" id="L191">            System.out.println(&quot;Trigger system initialized&quot;);</span>
+
+<span class="nc" id="L193">            renderingSystem.resetCamera();</span>
+<span class="nc" id="L194">            System.out.println(&quot;Camera reset&quot;);</span>
+
+            // Update player position
+<span class="nc" id="L197">            player.setPosition(playerStartPosition);</span>
+<span class="nc" id="L198">            playerStartPos.set(playerStartPosition);</span>
+<span class="nc" id="L199">            System.out.println(&quot;Player position set to: &quot; + playerStartPosition);</span>
+
+            // Add the teachers
+<span class="nc" id="L202">            teacher1Active = true;</span>
+<span class="nc" id="L203">            teacher2Active = true;</span>
+
+<span class="nc" id="L205">            ToastSystem.addToast(&quot;Entered new area!&quot;, GOOD);</span>
+<span class="nc bnc" id="L206" title="All 2 branches missed.">            if (removeDean) {</span>
+<span class="nc" id="L207">                ToastSystem.addToast(&quot;You've escaped the Dean's patrol area!&quot;, GOOD);</span>
+            }
+<span class="nc" id="L209">            System.out.println(&quot;Map transition complete!&quot;);</span>
+
+<span class="nc" id="L211">        } catch (Exception e) {</span>
+<span class="nc" id="L212">            System.err.println(&quot;Error loading new map: &quot; + mapPath);</span>
+<span class="nc" id="L213">            e.printStackTrace();</span>
+<span class="nc" id="L214">            ToastSystem.addToast(&quot;Error loading new map!&quot;, BAD);</span>
+<span class="nc" id="L215">        }</span>
+<span class="nc" id="L216">    }</span>
+
+    /**
+     * Check if the player has the red potion.
+     * If they do, show Long Boi and complete the hidden event.
+     * If not, tell the player they must find the potion.
+     */
+    public static void checkForLongboi() {
+<span class="nc" id="L224">        Color messageColour = new Color(0.2f, 1, 0.2f ,1);</span>
+<span class="nc bnc" id="L225" title="All 4 branches missed.">        if (longboiBonus == 0 &amp;&amp; !player.hasRedPotion()) {</span>
+<span class="nc" id="L226">            ToastSystem.addToast(&quot;Hello There! I seem to have misplaced my Red Potion, could you get it for me?&quot;, messageColour);</span>
+         }
+<span class="nc bnc" id="L228" title="All 4 branches missed.">        else if (longboiBonus == 0 &amp;&amp; player.hasRedPotion()){</span>
+<span class="nc" id="L229">            longboiBonus = LONGBOIBONUSAMOUNT;</span>
+<span class="nc" id="L230">            ToastSystem.addToast(&quot;You found my potion! Thank you!&quot;, messageColour);</span>
+<span class="nc" id="L231">            RenderingSystem.showLayer(&quot;LONGBOI&quot;);</span>
+<span class="nc" id="L232">            hiddenEventCounter++;</span>
+<span class="nc" id="L233">            achievementSystem.achieveThis(&quot;Find LONGBOI&quot;);</span>
+        }
+<span class="nc" id="L235">    }</span>
+
+    public static void openEntranceDoor() {
+<span class="nc bnc" id="L238" title="All 2 branches missed.">        if (player.hasEntranceKey()) {</span>
+<span class="nc" id="L239">            ToastSystem.addToast(&quot;You Opened the Deans office!&quot;, GOOD);</span>
+<span class="nc" id="L240">            collisionSystem.removeCollisionByName(&quot;entranceDoor&quot;);</span>
+<span class="nc" id="L241">            RenderingSystem.hideLayer(&quot;Entrance Closed&quot;);</span>
+<span class="nc bnc" id="L242" title="All 2 branches missed.">        } else if (player.hasFakeKey()) {</span>
+            // Player has fake key but not real entrance key
+<span class="nc" id="L244">            ToastSystem.addToast(&quot;This key doesn't fit!&quot;, Color.RED);</span>
+<span class="nc" id="L245">            ToastSystem.addToast(&quot;You need the real Entrance Key...&quot;, Color.RED);</span>
+        } else {
+            // Player has neither key
+<span class="nc" id="L248">            ToastSystem.addToast(&quot;You need the Entrance Key..&quot;, BAD);</span>
+        }
+<span class="nc" id="L250">    }</span>
+
+    public static void collectStar() {
+<span class="nc bnc" id="L253" title="All 2 branches missed.">        if (!starCollected) {</span>
+<span class="nc" id="L254">            int scoreBonus = 50000;</span>
+<span class="nc" id="L255">            score += scoreBonus;</span>
+
+<span class="nc" id="L257">            RenderingSystem.hideLayer(&quot;Speed&quot;);</span>
+<span class="nc" id="L258">            starCollected = true;</span>
+<span class="nc" id="L259">            ToastSystem.addToast(&quot;You found a Star!&quot;, GOOD);</span>
+<span class="nc" id="L260">            ToastSystem.addToast(&quot;+&quot; + scoreBonus + &quot; points!&quot;, GOOD);</span>
+        }
+<span class="nc" id="L262">    }</span>
+
+    public void draw() {
+        // decided whether each dean should be drawn depending on whether it is active or not
+<span class="nc bnc" id="L266" title="All 2 branches missed.">        Dean onlytoDrawDean = deanActive ? dean : null;</span>
+<span class="nc bnc" id="L267" title="All 2 branches missed.">        Dean onlytoDrawTeacher1 = teacher1Active ? teacher1 : null;</span>
+<span class="nc bnc" id="L268" title="All 2 branches missed.">        Dean onlytoDrawTeacher2 = teacher2Active ? teacher2 : null;</span>
+
+        // gets the top 5 scores from the scoreboard to pass into the rendering functions if needed
+<span class="nc" id="L271">        List&lt;ScoreboardSystem.Score&gt; scores = scoreboard.getTopScores();</span>
+
+<span class="nc" id="L273">        Dean[] teacherList = {onlytoDrawDean, onlytoDrawTeacher1, onlytoDrawTeacher2};</span>
+
+<span class="nc" id="L275">        renderingSystem.draw(player, teacherList, showCollision, timerSystem.elapsedTime, worldCollision);</span>
+<span class="nc bnc" id="L276" title="All 5 branches missed.">        switch (gameState) {</span>
+            case NOT_STARTED:
+<span class="nc" id="L278">                renderingSystem.renderStartOverlay(960, 640, achievementSystem.getAchievements());</span>
+<span class="nc" id="L279">                break;</span>
+            case PAUSED:
+<span class="nc" id="L281">                renderingSystem.renderPauseOverlay(960, 640, positiveEventCounter, negativeEventCounter, hiddenEventCounter, achievementSystem.getAchievements());</span>
+<span class="nc" id="L282">                break;</span>
+            case WIN:
+<span class="nc" id="L284">                renderingSystem.renderWinOverlay(960, 640, timerSystem.getTimeLeft(), score, positiveEventCounter, negativeEventCounter, hiddenEventCounter, scores);</span>
+<span class="nc" id="L285">                break;</span>
+            case LOSE:
+<span class="nc" id="L287">                renderingSystem.renderLoseOverlay(960, 640, positiveEventCounter, negativeEventCounter, hiddenEventCounter, scores);</span>
+<span class="nc" id="L288">                break;</span>
+            default:
+                break;
+        }
+<span class="nc" id="L292">    }</span>
+
+    /**
+     * Open the door of the room with the chest.
+     * Remove its hitbox and graphic.
+     */
+    public static void openChestRoomDoor() {
+<span class="nc bnc" id="L299" title="All 4 branches missed.">        if (player.hasChestRoomKey() &amp;&amp; !chestDoorOpen) {</span>
+<span class="nc" id="L300">            ToastSystem.addToast(&quot;You Opened the Door!&quot;, GOOD);</span>
+<span class="nc" id="L301">            collisionSystem.removeCollisionByName(&quot;chestRoomDoor&quot;);</span>
+<span class="nc" id="L302">            RenderingSystem.hideLayer(&quot;ChestDoorClosed&quot;);</span>
+<span class="nc" id="L303">            chestDoorOpen = true;</span>
+        }
+<span class="nc" id="L305">    }</span>
+
+    /**
+     * Open the exit.
+     * Remove its hitbox and hide its graphic.
+     */
+    public static void openExit() {
+<span class="nc bnc" id="L312" title="All 4 branches missed.">        if (player.hasExitKey() &amp;&amp; !exitOpen) {</span>
+<span class="nc" id="L313">            ToastSystem.addToast(&quot;You Opened the Exit!&quot;, GOOD);</span>
+<span class="nc" id="L314">            collisionSystem.removeCollisionByName(&quot;exitDoor&quot;);</span>
+<span class="nc" id="L315">            RenderingSystem.hideLayer(&quot;ExitClosed&quot;);</span>
+<span class="nc" id="L316">            exitOpen = true;</span>
+        }
+<span class="nc" id="L318">    }</span>
+
+    public static void openExit2() {
+<span class="nc bnc" id="L321" title="All 4 branches missed.">        if (player.hasExitKey2() &amp;&amp; !exitOpen2) {</span>
+<span class="nc" id="L322">            ToastSystem.addToast(&quot;You Opened the Exit!&quot;, GOOD);</span>
+<span class="nc" id="L323">            collisionSystem.removeCollisionByName(&quot;exitDoor&quot;);</span>
+<span class="nc" id="L324">            RenderingSystem.hideLayer(&quot;Exit Closed&quot;);</span>
+<span class="nc" id="L325">            exitOpen2 = true;</span>
+        }
+<span class="nc" id="L327">    }</span>
+
+    public static void bluePotion() {
+
+<span class="nc" id="L331">    }</span>
+
+    /**
+     * Give the scroll powerup to the player, making the player invisible for 15s.
+     * Hide the scroll graphic.
+     */
+    public static void getScroll() {
+<span class="nc bnc" id="L338" title="All 2 branches missed.">        if (!scrollUsed) {</span>
+<span class="nc" id="L339">            player.becomeInvisible();</span>
+<span class="nc" id="L340">            RenderingSystem.hideLayer(&quot;Scroll&quot;);</span>
+<span class="nc" id="L341">            scrollUsed = true;</span>
+<span class="nc" id="L342">            ToastSystem.addToast(&quot;You got the Scroll!&quot;, GOOD);</span>
+<span class="nc" id="L343">            ToastSystem.addToast(&quot;You are invisible for 15s&quot;, GOOD);</span>
+<span class="nc" id="L344">            positiveEventCounter++;</span>
+        }
+<span class="nc" id="L346">    }</span>
+
+    /**
+     * Set the game to the started state, and unpause it.
+     * Used once to start the game.
+     */
+    public static void startGame() {
+<span class="nc bnc" id="L353" title="All 2 branches missed.">        if (gameState == GameState.NOT_STARTED) {</span>
+<span class="nc" id="L354">            gameState = GameState.PAUSED;</span>
+<span class="nc" id="L355">            togglePause();</span>
+        }
+<span class="nc" id="L357">    }</span>
+
+    /**
+     * Set the game to the win state, used when the player escapes.
+     */
+    public static void winGame() {
+<span class="nc" id="L363">        togglePause();</span>
+<span class="nc" id="L364">        gameState = GameState.WIN;</span>
+        // Adds the player's name nad score to the scoreboard
+<span class="nc" id="L366">        score = calculateScore();</span>
+<span class="nc bnc" id="L367" title="All 2 branches missed.">        if (score &gt;= 200000) {achievementSystem.achieveThis(&quot;Achieve a score of 200000 or higher&quot;);}</span>
+<span class="nc bnc" id="L368" title="All 2 branches missed.">        if (score &gt;= 400000) {achievementSystem.achieveThis(&quot;Achieve a score of 400000 or higher&quot;);}</span>
+<span class="nc bnc" id="L369" title="All 2 branches missed.">        if (TimerSystem.getTimeLeft() &gt; 240) {achievementSystem.achieveThis(&quot;Escape with more than 4 minutes remaining&quot;);}</span>
+<span class="nc" id="L370">        achievementSystem.achieveThis(&quot;Beat the game!&quot;);</span>
+<span class="nc" id="L371">    }</span>
+
+    /**
+     * Set the game to the loss state, used when the player runs out of time.
+     */
+    public static void LoseGame() {
+<span class="nc" id="L377">        togglePause();</span>
+<span class="nc" id="L378">        gameState = GameState.LOSE;</span>
+<span class="nc" id="L379">        achievementSystem.achieveThis(&quot;Lose the game: This game is too hard :(&quot;);</span>
+<span class="nc" id="L380">    }</span>
+
+    /**
+     * Calculate the players score based on how much time was left and whether they found Long Boi.
+     * @return The score.
+     */
+    public static int calculateScore() {
+<span class="nc" id="L387">        return TimerSystem.getTimeLeft() * 1000 + longboiBonus;</span>
+    }
+
+    /**
+     * Toggle whether the window should be in Windowed or Fullscreen mode.
+     */
+    public void toggleFullscreen() {
+<span class="nc bnc" id="L394" title="All 2 branches missed.">        if (isFullscreen) {</span>
+<span class="nc" id="L395">                Gdx.graphics.setWindowedMode(960, 640);</span>
+            }
+            else {
+<span class="nc" id="L398">                Gdx.graphics.setFullscreenMode(Gdx.graphics.getDisplayMode());</span>
+            }
+<span class="nc bnc" id="L400" title="All 2 branches missed.">            isFullscreen = !isFullscreen;</span>
+<span class="nc" id="L401">    }</span>
+
+    /**
+     * Toggle whether the game should be paused.
+     * This will freeze the player/dean, stop all game logic and display the pause overlay.
+     */
+    public static void togglePause() {
+<span class="nc bnc" id="L408" title="All 2 branches missed.">        if (gameState == GameState.PAUSED) {</span>
+<span class="nc bnc" id="L409" title="All 2 branches missed.">            if (!playerCaught) {</span>
+<span class="nc" id="L410">                player.unfreeze();</span>
+<span class="nc" id="L411">                dean.unfreeze();</span>
+            }
+<span class="nc" id="L413">            player.closeBook();</span>
+<span class="nc" id="L414">            gameState = GameState.PLAYING;</span>
+        }
+        else {
+<span class="nc" id="L417">            player.freeze();</span>
+<span class="nc" id="L418">            dean.freeze();</span>
+<span class="nc bnc" id="L419" title="All 2 branches missed.">            if (gameState == GameState.PLAYING) gameState = GameState.PAUSED;</span>
+        }
+<span class="nc" id="L421">    }</span>
+
+    /**
+     * Where the game process its logic each frame.
+     * It will not run if the game is paused.
+     */
+    public void logic() {
+<span class="nc" id="L428">        timerSystem.tick();</span>
+<span class="nc bnc" id="L429" title="All 2 branches missed.">        if (deanActive) {</span>
+<span class="nc" id="L430">            dean.nextMove();</span>
+<span class="nc" id="L431">            checkTeacherCatch(dean);</span>
+        }
+<span class="nc bnc" id="L433" title="All 2 branches missed.">        if(teacher1Active) {</span>
+<span class="nc" id="L434">            teacher1.nextMove();</span>
+<span class="nc" id="L435">            checkTeacherCatch(teacher1);</span>
+        }
+<span class="nc bnc" id="L437" title="All 2 branches missed.">        if(teacher2Active) {</span>
+<span class="nc" id="L438">            teacher2.nextMove();</span>
+<span class="nc" id="L439">            checkTeacherCatch(teacher2);</span>
+        }
+
+        // Update time freeze
+<span class="nc bnc" id="L443" title="All 2 branches missed.">        if (timeFrozen) {</span>
+<span class="nc" id="L444">            freezeTimer -= Gdx.graphics.getDeltaTime();</span>
+
+            // End time freeze
+<span class="nc bnc" id="L447" title="All 2 branches missed.">            if (freezeTimer &lt;= 0) {</span>
+<span class="nc" id="L448">                endTimeFreeze();</span>
+            }
+        }
+
+<span class="nc bnc" id="L452" title="All 2 branches missed.">        if (postCatchImmunity &gt; 0) {</span>
+<span class="nc" id="L453">            postCatchImmunity -= Gdx.graphics.getDeltaTime();</span>
+        }
+
+        // Update alcohol effects
+<span class="nc bnc" id="L457" title="All 2 branches missed.">        if (alcoholActive) {</span>
+<span class="nc" id="L458">            alcoholTimer -= Gdx.graphics.getDeltaTime();</span>
+
+            // End alcohol effects
+<span class="nc bnc" id="L461" title="All 2 branches missed.">            if (alcoholTimer &lt;= 0) {</span>
+<span class="nc" id="L462">                endAlcohol();</span>
+            }
+        }
+
+        // Player can always move (unless caught)
+<span class="nc" id="L467">        TriggerSystem.checkTouchTriggers(player);</span>
+<span class="nc" id="L468">        player.update();</span>
+<span class="nc" id="L469">    }</span>
+
+    /**
+     * Checks if the dean or teacher has caught the player, and punishes them if he has by removing 50s from time left.
+     */
+    public void checkTeacherCatch(Dean teacher) {
+
+<span class="nc bnc" id="L476" title="All 2 branches missed.">        if (playerCaught) {</span>
+<span class="nc bnc" id="L477" title="All 2 branches missed.">            if (playerCaughtTime &lt;= 0) {</span>
+<span class="nc" id="L478">                endPlayerCatch(teacher);</span>
+<span class="nc" id="L479">                playerCaughtTime = INITALPLAYERCAUGHTTIME;</span>
+            }
+            else {
+<span class="nc" id="L482">                float delta = Gdx.graphics.getDeltaTime();</span>
+<span class="nc" id="L483">                playerCaughtTime -= delta;</span>
+            }
+<span class="nc" id="L485">            return;</span>
+        }
+
+<span class="nc bnc" id="L488" title="All 4 branches missed.">        if (timeFrozen || postCatchImmunity &gt; 0) {</span>
+<span class="nc" id="L489">            return;</span>
+        }
+        
+<span class="nc bnc" id="L492" title="All 2 branches missed.">        if (teacher.canReach(player)) {</span>
+<span class="nc" id="L493">            startPlayerCatch(teacher);</span>
+        }
+<span class="nc" id="L495">    }</span>
+
+    /**
+     * Run when the player is first caught by the game.
+     * This will begin the sequence where the player is held in detention while the timer goes down.
+     * This will freeze the player and dean.
+     */
+    private void startPlayerCatch(Dean teacher) {
+<span class="nc" id="L503">        playerCaught = true;</span>
+<span class="nc" id="L504">        playerCaughtTime = INITALPLAYERCAUGHTTIME;</span>
+<span class="nc" id="L505">        player.freeze();</span>
+<span class="nc" id="L506">        teacher.freeze();</span>
+<span class="nc" id="L507">        player.setPosition(playerStartPos);</span>
+<span class="nc" id="L508">        player.closeBook();</span>
+<span class="nc" id="L509">        postCatchImmunity = POSTCATCH;</span>
+
+<span class="nc bnc" id="L511" title="All 2 branches missed.">        if (timeFrozen) {</span>
+<span class="nc" id="L512">            endTimeFreeze();</span>
+        }
+
+<span class="nc" id="L515">        teacher.changeAnimation(3);</span>
+<span class="nc" id="L516">        teacher.setPosition(playerStartPos.x + 32, playerStartPos.y);</span>
+<span class="nc" id="L517">        timerSystem.addGradually(DEANPUNISHMENT); // 48 not 50 because you spend 2s stood while the timer goes down.</span>
+<span class="nc" id="L518">        ToastSystem.addToast(&quot;You were caught by the Dean!&quot;, BAD);</span>
+<span class="nc" id="L519">        ToastSystem.addToast(&quot;You were stuck being lectured for 30s!&quot;, BAD);</span>
+<span class="nc" id="L520">        negativeEventCounter++;</span>
+<span class="nc" id="L521">    }</span>
+
+    /**
+     * This will end the sequence where the player is held in detention while the timer goes down.
+     * This will unfreeze the player and dean.
+     * It will rest the dean to the start of its patrol.
+     */
+    private void endPlayerCatch(Dean d) {
+<span class="nc" id="L529">        d.resetPosition();</span>
+<span class="nc" id="L530">        d.restartPath();</span>
+<span class="nc" id="L531">        d.unfreeze();</span>
+<span class="nc" id="L532">        player.unfreeze();</span>
+<span class="nc" id="L533">        playerCaught = false;</span>
+<span class="nc" id="L534">    }</span>
+
+    /**
+     * Use to drop remove the spikes in the chest room when the switch is pressed.
+     */
+    public static void dropSpikes() {
+<span class="nc bnc" id="L540" title="All 2 branches missed.">        if (!spikesLowered) {</span>
+<span class="nc" id="L541">            collisionSystem.removeCollisionByName(&quot;chestRoomSpikes&quot;);</span>
+<span class="nc" id="L542">            ToastSystem.addToast(&quot;You Lowered the Spikes!&quot;, GOOD);</span>
+<span class="nc" id="L543">            RenderingSystem.hideLayer(&quot;Spikes&quot;);</span>
+<span class="nc" id="L544">            RenderingSystem.hideLayer(&quot;Switch&quot;);</span>
+<span class="nc" id="L545">            spikesLowered = true;</span>
+        }
+<span class="nc" id="L547">    }</span>
+
+    /**
+     * Activate time freeze effect.
+     */
+    public static void activateTimeFreeze() {
+<span class="nc bnc" id="L553" title="All 2 branches missed.">        if (!timeFrozen) {</span>
+<span class="nc" id="L554">            timeFrozen = true;</span>
+<span class="nc" id="L555">            freezeTimer = freezeDuration;</span>
+
+            // Freeze dean and teachers
+<span class="nc bnc" id="L558" title="All 2 branches missed.">            if (dean != null) dean.freeze();</span>
+<span class="nc bnc" id="L559" title="All 2 branches missed.">            if (teacher1 != null) teacher1.freeze();</span>
+<span class="nc bnc" id="L560" title="All 2 branches missed.">            if (teacher2 != null) teacher2.freeze();</span>
+
+            // Freeze timer
+            // We'll handle this in TimerSystem
+
+<span class="nc" id="L565">            ToastSystem.addToast(&quot;Who turned off the heating?! The University is frozen!!&quot;, Color.CYAN);</span>
+<span class="nc" id="L566">            achievementSystem.achieveThis(&quot;Freeze the university&quot;);</span>
+<span class="nc" id="L567">            hiddenEventCounter++;</span>
+        }
+<span class="nc" id="L569">    }</span>
+
+    /**
+     * End the time freeze effect.
+     */
+    public static void endTimeFreeze() {
+<span class="nc bnc" id="L575" title="All 2 branches missed.">        if (timeFrozen) {</span>
+<span class="nc" id="L576">            timeFrozen = false;</span>
+
+            // Unfreeze dean and teachers
+<span class="nc bnc" id="L579" title="All 4 branches missed.">            if (dean != null &amp;&amp; !playerCaught) dean.unfreeze();</span>
+<span class="nc bnc" id="L580" title="All 2 branches missed.">            if (teacher1 != null) teacher1.unfreeze();</span>
+<span class="nc bnc" id="L581" title="All 2 branches missed.">            if (teacher2 != null) teacher2.unfreeze();</span>
+
+<span class="nc" id="L583">            ToastSystem.addToast(&quot;Ahhh.. back to normal&quot;, Color.WHITE);</span>
+        }
+<span class="nc" id="L585">    }</span>
+
+    /**
+     * @return whether time is currently frozen.
+     */
+    public static boolean isTimeFrozen() {
+<span class="nc" id="L591">        return timeFrozen;</span>
+    }
+
+    /**
+     * @return remaining freeze time.
+     */
+    public static float getFreezeTimeLeft() {
+<span class="nc" id="L598">        return freezeTimer;</span>
+    }
+
+    /**
+     * Activate alcohol effects.
+     */
+    public static void activateAlcohol() {
+<span class="nc bnc" id="L605" title="All 2 branches missed.">        if (!alcoholActive) {</span>
+<span class="nc" id="L606">            alcoholActive = true;</span>
+<span class="nc" id="L607">            alcoholTimer = alcoholDuration;</span>
+
+<span class="nc" id="L609">            RenderingSystem.hideLayer(&quot;Alcohol&quot;);</span>
+
+<span class="nc" id="L611">            ToastSystem.addToast(&quot;You drank the alcohol!&quot;, Color.MAGENTA);</span>
+<span class="nc" id="L612">            ToastSystem.addToast(&quot;Everything is wobbly...&quot;, Color.MAGENTA);</span>
+<span class="nc" id="L613">            hiddenEventCounter++;</span>
+<span class="nc" id="L614">            achievementSystem.achieveThis(&quot;Get drunk&quot;);</span>
+        }
+<span class="nc" id="L616">    }</span>
+
+
+    /**
+     * End the alcohol effects.
+     */
+    public static void endAlcohol() {
+<span class="nc bnc" id="L623" title="All 2 branches missed.">        if (alcoholActive) {</span>
+<span class="nc" id="L624">            alcoholActive = false;</span>
+        }
+<span class="nc" id="L626">    }</span>
+
+
+
+    /**
+     * Get current alcohol color based on time.
+     */
+    public static Color getCurrentAlcoholColor() {
+<span class="nc bnc" id="L634" title="All 2 branches missed.">        if (!alcoholActive) return null;</span>
+
+        // Cycle through colors based on time
+<span class="nc" id="L637">        float cycleTime = 0.5f; // Change color every 0.5 seconds</span>
+<span class="nc" id="L638">        int colorIndex = (int)((alcoholDuration - alcoholTimer) / cycleTime) % ALCOHOL_COLORS.length;</span>
+
+<span class="nc" id="L640">        return ALCOHOL_COLORS[colorIndex];</span>
+    }
+
+    /**
+     * Get screen wobble offset for current frame.
+     */
+    public static Vector2 getAlcoholWobble() {
+<span class="nc bnc" id="L647" title="All 2 branches missed.">        if (!alcoholActive) return new Vector2(0, 0);</span>
+
+        // Create wobble using sine waves
+<span class="nc" id="L650">        float time = alcoholDuration - alcoholTimer;</span>
+<span class="nc" id="L651">        float xWobble = (float)Math.sin(time * alcoholWobbleSpeed) * alcoholWobbleIntensity;</span>
+<span class="nc" id="L652">        float yWobble = (float)Math.cos(time * alcoholWobbleSpeed * 0.7f) * alcoholWobbleIntensity;</span>
+
+<span class="nc" id="L654">        return new Vector2(xWobble, yWobble);</span>
+    }
+
+    /**
+     * @return whether alcohol effects are currently active.
+     */
+    public static boolean isAlcoholActive() {
+<span class="nc" id="L661">        return alcoholActive;</span>
+    }
+
+    /**
+     * @return remaining alcohol effect time.
+     */
+    public static float getAlcoholTimeLeft() {
+<span class="nc" id="L668">        return alcoholTimer;</span>
+    }
+
+
+
+    @Override
+    public void resize(int width, int height) {
+<span class="nc" id="L675">        renderingSystem.resize(width, height);</span>
+<span class="nc" id="L676">    }</span>
+
+    @Override
+    public void pause() {
+<span class="nc" id="L680">        togglePause();</span>
+<span class="nc" id="L681">    }</span>
+
+    @Override
+    public void resume() {
+<span class="nc" id="L685">        togglePause();</span>
+<span class="nc" id="L686">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

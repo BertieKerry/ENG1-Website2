@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CollisionSystem.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">core</a> &gt; <a href="index.source.html" class="el_package">io.github.eng1group9.systems</a> &gt; <span class="el_source">CollisionSystem.java</span></div><h1>CollisionSystem.java</h1><pre class="source lang-java linenums">package io.github.eng1group9.systems;
+
+import java.util.LinkedList;
+import java.util.List;
+
+import com.badlogic.gdx.maps.MapLayer;
+import com.badlogic.gdx.maps.MapObject;
+import com.badlogic.gdx.maps.MapObjects;
+import com.badlogic.gdx.maps.objects.RectangleMapObject;
+import com.badlogic.gdx.maps.tiled.TiledMap;
+import com.badlogic.gdx.math.Rectangle;
+
+/**
+ * Handles player collision.
+ */
+<span class="fc" id="L16">public class CollisionSystem {</span>
+    private List&lt;Rectangle&gt; worldCollision;
+    private TiledMap map;
+
+    /**
+     * Take a tilemap and setup a list of collision rectangles using the &quot;Collision&quot; layer. 
+     * @param map - The tilemap (.tmx file). 
+     */
+    public void init(TiledMap map) {
+<span class="nc" id="L25">        this.map = map;</span>
+<span class="nc" id="L26">        worldCollision = new LinkedList&lt;&gt;();</span>
+
+<span class="nc" id="L28">        MapLayer collisionLayer = map.getLayers().get(&quot;Collision&quot;);</span>
+<span class="nc bnc" id="L29" title="All 2 branches missed.">        if (collisionLayer == null) {</span>
+<span class="nc" id="L30">            System.err.println(&quot;No Collisions found&quot;);</span>
+<span class="nc" id="L31">            return;</span>
+        }
+<span class="nc" id="L33">        MapObjects collisionObjects = collisionLayer.getObjects();</span>
+
+<span class="nc bnc" id="L35" title="All 2 branches missed.">        if (collisionObjects == null) {</span>
+<span class="nc" id="L36">            System.err.println(&quot;No Collisions found&quot;);</span>
+<span class="nc" id="L37">            return;</span>
+        }
+
+<span class="nc bnc" id="L40" title="All 2 branches missed.">        for (MapObject mapObject : collisionObjects) {</span>
+<span class="nc" id="L41">            Rectangle nextRectangle = ((RectangleMapObject) mapObject).getRectangle();</span>
+<span class="nc" id="L42">            nextRectangle.set(nextRectangle.x * 2,nextRectangle.y * 2, nextRectangle.width * 2, nextRectangle.height * 2);</span>
+<span class="nc" id="L43">            worldCollision.add(nextRectangle);</span>
+<span class="nc" id="L44">        }</span>
+
+<span class="nc" id="L46">        System.out.println(&quot;Loaded &quot; + worldCollision.size() + &quot; collision rectangles.&quot;);</span>
+<span class="nc" id="L47">    }</span>
+
+<span class="nc" id="L49">    public List&lt;Rectangle&gt; getWorldCollision() { return worldCollision; }</span>
+    
+    /**
+     * Serches collision Rectangle for name, then deletes from world collision by the rectangle.
+     * @param name - The name of the rectangle. 
+     */
+    public void removeCollisionByName(String name) {
+<span class="nc" id="L56">        MapLayer collisionLayer = map.getLayers().get(&quot;Collision&quot;);</span>
+<span class="nc bnc" id="L57" title="All 2 branches missed.">        if (collisionLayer == null) {</span>
+<span class="nc" id="L58">            System.err.println(&quot;Warning: Cannot remove collision - no Collision layer found&quot;);</span>
+<span class="nc" id="L59">            return;</span>
+        }
+<span class="nc" id="L61">        MapObjects collisionObjects = collisionLayer.getObjects();</span>
+
+<span class="nc bnc" id="L63" title="All 2 branches missed.">        for (MapObject m : collisionObjects) {</span>
+
+<span class="nc bnc" id="L65" title="All 2 branches missed.">            if (m.getName() == null) {</span>
+<span class="nc" id="L66">                continue;</span>
+            }
+
+<span class="nc bnc" id="L69" title="All 2 branches missed.">            if (!m.getName().equals(name)) {</span>
+<span class="nc" id="L70">                continue;</span>
+            }
+
+<span class="nc" id="L73">            Rectangle r = ((RectangleMapObject) m).getRectangle();</span>
+<span class="nc" id="L74">            worldCollision.remove(r);</span>
+<span class="nc" id="L75">        }</span>
+<span class="nc" id="L76">    }</span>
+
+    /**
+     * Check if it is safe for an entity to move to a given location. 
+     * @param x - The x co-ordinate to check.
+     * @param y - The y co-ordinate to check.
+     * @param currentHitbox - The hitbox of the entity you wish to check. 
+     * @return True if the entity will not hit collision when it moves there. 
+     */
+    public boolean safeToMove(float x, float y, Rectangle currentHitbox) {
+<span class="nc" id="L86">        Rectangle testHitbox = new Rectangle();</span>
+<span class="nc" id="L87">        testHitbox = testHitbox.set(currentHitbox);</span>
+<span class="nc" id="L88">        testHitbox.setPosition(x + 16, y + 16);</span>
+
+<span class="nc bnc" id="L90" title="All 2 branches missed.">        for (Rectangle rectangle : worldCollision) {</span>
+<span class="nc bnc" id="L91" title="All 2 branches missed.">            if (rectangle.overlaps(testHitbox)) {</span>
+<span class="nc" id="L92">                return false;</span>
+            }
+<span class="nc" id="L94">        }</span>
+<span class="nc" id="L95">        return true;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

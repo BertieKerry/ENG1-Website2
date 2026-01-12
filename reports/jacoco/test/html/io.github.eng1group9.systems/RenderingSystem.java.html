@@ -1,0 +1,524 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RenderingSystem.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">core</a> &gt; <a href="index.source.html" class="el_package">io.github.eng1group9.systems</a> &gt; <span class="el_source">RenderingSystem.java</span></div><h1>RenderingSystem.java</h1><pre class="source lang-java linenums">package io.github.eng1group9.systems;
+
+import java.util.List;
+
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.maps.MapLayer;
+import com.badlogic.gdx.maps.tiled.TiledMap;
+import com.badlogic.gdx.maps.tiled.TiledMapImageLayer;
+import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
+import com.badlogic.gdx.maps.tiled.TmxMapLoader;
+import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
+import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.ScreenUtils;
+import com.badlogic.gdx.utils.viewport.FitViewport;
+
+import io.github.eng1group9.Main;
+import io.github.eng1group9.entities.Dean;
+import io.github.eng1group9.entities.Player;
+import io.github.eng1group9.systems.ToastSystem.Toast;
+import io.github.eng1group9.systems.TriggerSystem.Trigger;
+import io.github.eng1group9.systems.ScoreboardSystem.Score;
+
+/**
+ * Handles drawing and displaying frames.
+ */
+<span class="fc" id="L32">public class RenderingSystem {</span>
+    private Texture missingTexture;
+    private Texture missingTexture2;
+    private Texture bookPageTexture;
+    private SpriteBatch worldBatch;
+    private SpriteBatch uiBatch;
+    private BitmapFont font;
+    private OrthographicCamera camera;
+    private FitViewport viewport;
+    private OrthogonalTiledMapRenderer mapRenderer;
+    private static TiledMap map;
+
+
+
+    /**
+     * Takes and tileset and sets up a renderer to display it.
+     * @param tmxPath - The path to the tileset (.tmx file).
+     * @param viewportWidth - how many pixels wide the world is.
+     * @param viewportHeight - how many pixels high the world is.
+     */
+    public void initWorld(String tmxPath, int viewportWidth, int viewportHeight) {
+
+<span class="nc bnc" id="L54" title="All 2 branches missed.">        if (mapRenderer != null) {</span>
+<span class="nc" id="L55">            mapRenderer.dispose();</span>
+<span class="nc" id="L56">            mapRenderer = null;</span>
+        }
+<span class="nc bnc" id="L58" title="All 2 branches missed.">        if (map != null) {</span>
+<span class="nc" id="L59">            map.dispose();</span>
+<span class="nc" id="L60">            map = null;</span>
+        }
+
+<span class="nc" id="L63">        System.gc();</span>
+
+<span class="nc" id="L65">        System.out.println(&quot;Loading map from: &quot; + tmxPath);</span>
+<span class="nc" id="L66">        map = new TmxMapLoader().load(tmxPath);</span>
+<span class="nc" id="L67">        System.out.println(&quot;Map loaded, layers: &quot; + map.getLayers().getCount());</span>
+
+<span class="nc" id="L69">        this.mapRenderer = new OrthogonalTiledMapRenderer(map);</span>
+
+<span class="nc bnc" id="L71" title="All 2 branches missed.">        if (this.camera == null) {</span>
+<span class="nc" id="L72">            this.camera = new OrthographicCamera();</span>
+        }
+
+<span class="nc" id="L75">        this.camera.setToOrtho(false, viewportWidth, viewportHeight);</span>
+<span class="nc" id="L76">        this.camera.update();</span>
+
+<span class="nc bnc" id="L78" title="All 2 branches missed.">        if (this.viewport == null) {</span>
+<span class="nc" id="L79">            this.viewport = new FitViewport(viewportWidth, viewportHeight, camera);</span>
+        } else {
+<span class="nc" id="L81">            this.viewport.setCamera(camera);</span>
+<span class="nc" id="L82">            this.viewport.update(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());</span>
+        }
+
+<span class="nc bnc" id="L85" title="All 2 branches missed.">        if (this.missingTexture == null) {</span>
+<span class="nc" id="L86">            this.missingTexture = new Texture(&quot;missingTexture.png&quot;);</span>
+        }
+<span class="nc bnc" id="L88" title="All 2 branches missed.">        if (this.missingTexture2 == null) {</span>
+<span class="nc" id="L89">            this.missingTexture2 = new Texture(&quot;missingTexture2.png&quot;);</span>
+        }
+<span class="nc bnc" id="L91" title="All 2 branches missed.">        if (this.bookPageTexture == null) {</span>
+<span class="nc" id="L92">            this.bookPageTexture = new Texture(&quot;bookPage.png&quot;);</span>
+        }
+<span class="nc bnc" id="L94" title="All 2 branches missed.">        if (this.worldBatch == null) {</span>
+<span class="nc" id="L95">            this.worldBatch = new SpriteBatch();</span>
+        }
+<span class="nc bnc" id="L97" title="All 2 branches missed.">        if (this.uiBatch == null) {</span>
+<span class="nc" id="L98">            this.uiBatch = new SpriteBatch();</span>
+        }
+<span class="nc bnc" id="L100" title="All 2 branches missed.">        if (this.font == null) {</span>
+<span class="nc" id="L101">            this.font = new BitmapFont();</span>
+        }
+<span class="nc" id="L103">    }</span>
+
+<span class="nc" id="L105">    public OrthogonalTiledMapRenderer getMapRenderer() { return mapRenderer; }</span>
+
+    /**
+     * Hide a layer so that tiles on it are NOT rendered.
+     * @param name - The name of the layer.
+     */
+    public static void hideLayer(String name) {
+<span class="nc bnc" id="L112" title="All 2 branches missed.">        if (map.getLayers().get(name) != null) {</span>
+<span class="nc" id="L113">            map.getLayers().get(name).setVisible(false);</span>
+        }
+<span class="nc" id="L115">    }</span>
+
+    /**
+     * Show a layer so that tiles on it are rendered.
+     * @param name - The name of the layer.
+     */
+    public static void showLayer(String name) {
+<span class="nc bnc" id="L122" title="All 2 branches missed.">        if (map.getLayers().get(name) != null) {</span>
+<span class="nc" id="L123">            map.getLayers().get(name).setVisible(true);</span>
+        }
+<span class="nc" id="L125">    }</span>
+
+    /**
+     * Draw a frame to display.
+     * @param player - The current player object.
+     * @param teacherList - a list of all Teachers.
+     * @param showCollision - Wether to render the zones for collision / triggers (dev mode).
+     * @param elapsedTime - How much time has passed since the game began.
+     * @param worldCollision - A list of rectangles representing the games collison.
+     */
+    public void draw(Player player, Dean[] teacherList, boolean showCollision, float elapsedTime, List&lt;Rectangle&gt; worldCollision) {
+<span class="nc" id="L136">        ScreenUtils.clear(Color.BLACK);</span>
+
+
+        // Apply alcohol wobble to camera
+<span class="nc bnc" id="L140" title="All 2 branches missed.">        if (Main.isAlcoholActive()) {</span>
+<span class="nc" id="L141">            Vector2 wobble = Main.getAlcoholWobble();</span>
+<span class="nc" id="L142">            camera.position.x = 240 + wobble.x; // Center is 240 for 480 width</span>
+<span class="nc" id="L143">            camera.position.y = 160 + wobble.y; // Center is 160 for 320 height</span>
+<span class="nc" id="L144">            camera.update();</span>
+        }
+
+<span class="nc" id="L147">        viewport.apply();</span>
+
+<span class="nc" id="L149">        camera.update();</span>
+<span class="nc" id="L150">        mapRenderer.setView(camera);</span>
+<span class="nc" id="L151">        int layerCount = map.getLayers().getCount();</span>
+
+<span class="nc" id="L153">        int belowPlayerCount = Math.min(10, layerCount);</span>
+<span class="nc bnc" id="L154" title="All 2 branches missed.">        if (belowPlayerCount &gt; 0) {</span>
+<span class="nc" id="L155">            int[] belowPlayer = new int[belowPlayerCount];</span>
+<span class="nc bnc" id="L156" title="All 2 branches missed.">            for (int i = 0; i &lt; belowPlayerCount; i++) {</span>
+<span class="nc" id="L157">                belowPlayer[i] = i;</span>
+            }
+<span class="nc" id="L159">            mapRenderer.render(belowPlayer);</span>
+        }
+
+<span class="nc" id="L162">        worldBatch.begin();</span>
+<span class="nc" id="L163">        player.draw(worldBatch);</span>
+<span class="nc bnc" id="L164" title="All 2 branches missed.">        for(Dean t : teacherList) {</span>
+<span class="nc bnc" id="L165" title="All 2 branches missed.">            if (t != null) {</span>
+<span class="nc" id="L166">                t.draw(worldBatch);</span>
+            }
+        }
+<span class="nc" id="L169">        worldBatch.end();</span>
+
+<span class="nc bnc" id="L171" title="All 2 branches missed.">        if (layerCount &gt; 10) {</span>
+<span class="nc" id="L172">            int abovePlayerCount = Math.min(12, (layerCount + 1)- belowPlayerCount);</span>
+<span class="nc" id="L173">            int[] abovePlayer = new int[abovePlayerCount];</span>
+<span class="nc bnc" id="L174" title="All 2 branches missed.">            for (int i = 0; i &lt; abovePlayerCount; i++) {</span>
+<span class="nc" id="L175">                abovePlayer[i] = i + 7;</span>
+            }
+<span class="nc" id="L177">            mapRenderer.render(abovePlayer);</span>
+        }
+
+<span class="nc" id="L180">        uiBatch.begin();</span>
+<span class="nc" id="L181">        font.draw(uiBatch, TimerSystem.getClockDisplay(), 10, 640 - 10);</span>
+
+<span class="nc" id="L183">        renderToasts(font, uiBatch);</span>
+
+<span class="nc bnc" id="L185" title="All 4 branches missed.">        if (showCollision &amp;&amp; worldCollision != null) { // show collisions for debugging</span>
+<span class="nc" id="L186">            renderCollision(uiBatch, worldCollision, player, teacherList);</span>
+<span class="nc" id="L187">            renderTriggers(uiBatch);</span>
+        }
+<span class="nc" id="L189">        uiBatch.end();</span>
+
+<span class="nc" id="L191">        renderAlcoholOverlay();</span>
+<span class="nc" id="L192">        renderBookOverlay(player);</span>
+<span class="nc" id="L193">        renderFreezeOverlay();</span>
+<span class="nc" id="L194">    }</span>
+
+    public OrthographicCamera getCamera() {
+<span class="nc" id="L197">        return camera;</span>
+    }
+
+    /**
+     * Render the toast display on the top left of the screen.
+     * This is used to display text messages to the user for 5s.
+     * @param font The BitmapFont which used to render the text.
+     * @param uiBatch - The SpriteBatch used for this (should be the ui batch).
+     */
+    public void renderToasts(BitmapFont font, SpriteBatch uiBatch) {
+<span class="nc" id="L207">        ToastSystem.clearExpiredToasts();</span>
+<span class="nc" id="L208">        List&lt;Toast&gt; toasts = ToastSystem.getToasts();</span>
+<span class="nc" id="L209">        int offset = 0;</span>
+
+<span class="nc bnc" id="L211" title="All 2 branches missed.">        for (Toast t : toasts) {</span>
+<span class="nc" id="L212">            offset += 30;</span>
+<span class="nc" id="L213">            font.setColor(t.getColour());</span>
+<span class="nc" id="L214">            font.draw(uiBatch, t.getText(), 10, (640 - 10) - offset);</span>
+<span class="nc" id="L215">        }</span>
+<span class="nc" id="L216">        font.setColor(1, 1, 1, 1);</span>
+<span class="nc" id="L217">    }</span>
+
+    /**
+     * Render the zones for collision / triggers (dev mode).
+     * @param uiBatch - The SpriteBatch used for this (should be the ui batch).
+     * @param worldCollision - A list of rectangles representing the games collison.
+     * @param player
+     * @param teacherList - A list of all teachers
+     */
+    public void renderCollision(SpriteBatch uiBatch, List&lt;Rectangle&gt; worldCollision, Player player, Dean[] teacherList) {
+<span class="nc bnc" id="L227" title="All 2 branches missed.">        for (Rectangle rectangle : worldCollision) {</span>
+<span class="nc" id="L228">            uiBatch.setColor(1, 0, 0, 0.75f);</span>
+<span class="nc" id="L229">            uiBatch.draw(missingTexture, rectangle.x, rectangle.y , rectangle.width, rectangle.height);</span>
+<span class="nc" id="L230">        }</span>
+<span class="nc" id="L231">        uiBatch.draw(missingTexture, player.getHitbox().x + 16, player.getHitbox().y+ 16, player.getHitbox().width, player.getHitbox().height);</span>
+<span class="nc bnc" id="L232" title="All 2 branches missed.">        for(Dean t : teacherList) {</span>
+<span class="nc bnc" id="L233" title="All 2 branches missed.">            if (t != null) { // Only render dean collision if dean exists</span>
+<span class="nc" id="L234">                uiBatch.draw(missingTexture, t.getReachRectangle().x + 16, t.getReachRectangle().y+ 16, t.getReachRectangle().width, t.getReachRectangle().height);</span>
+            }
+        }
+
+<span class="nc" id="L238">    }</span>
+
+    /**
+     * Render the zones for triggers (dev mode).
+     * @param uiBatch - The SpriteBatch used for this (should be the ui batch).
+     */
+    public void renderTriggers(SpriteBatch uiBatch) {
+<span class="nc bnc" id="L245" title="All 2 branches missed.">        for (Trigger t : TriggerSystem.getTriggers()) {</span>
+<span class="nc" id="L246">            Rectangle rectangle = t.getZone();</span>
+<span class="nc" id="L247">            uiBatch.setColor(0, 1, 1, 0.75f);</span>
+<span class="nc" id="L248">            uiBatch.draw(missingTexture, rectangle.x, rectangle.y , rectangle.width, rectangle.height);</span>
+<span class="nc" id="L249">        }</span>
+<span class="nc" id="L250">    }</span>
+
+    public void resize(int width, int height) {
+<span class="nc" id="L253">        viewport.update(width, height);</span>
+<span class="nc" id="L254">    }</span>
+
+    /**
+     * Display the pause overlay, with instructions and controls.
+     * @param screenWidth - how many pixels wide the screen is.
+     * @param screenHeight - how many pixels high the screen is.
+     * @param positiveEventCounter - Number of PowerUps collected.
+     * @param negativeEventCounter - Number of times caught by the dean.
+     * @param hiddenEventCounter - Number of secrets found.
+     * @param achievements - A list of the player's achieved achievements.
+     */
+    public void renderPauseOverlay(int screenWidth, int screenHeight, int positiveEventCounter, int negativeEventCounter, int hiddenEventCounter, List&lt;AchievementSystem.Achievement&gt; achievements) {
+<span class="nc" id="L266">        uiBatch.begin();</span>
+<span class="nc" id="L267">        uiBatch.setColor(0, 0, 0, 0.5f);</span>
+<span class="nc" id="L268">        uiBatch.draw(missingTexture, 0, 0, screenWidth, screenHeight);</span>
+
+<span class="nc" id="L270">        font.getData().setScale(2f);</span>
+<span class="nc" id="L271">        font.setColor(1f, 0.84f, 0f, 1f);</span>
+<span class="nc" id="L272">        font.draw(uiBatch, &quot;Escape from Uni&quot;, screenWidth / 2.5f, (screenHeight / 2f) + 40);</span>
+
+<span class="nc" id="L274">        font.setColor(1, 1, 1, 1);</span>
+<span class="nc" id="L275">        font.draw(uiBatch, &quot;Instructions&quot;, screenWidth / 2.5f, (screenHeight / 2f) - 120);</span>
+<span class="nc" id="L276">        font.setColor(0f, 1f, 1f, 1f);</span>
+<span class="nc" id="L277">        font.draw(uiBatch, &quot;Achievements&quot;, (int) Math.round(screenWidth * 0.1), Math.round(screenHeight * 0.9));</span>
+
+<span class="nc" id="L279">        font.setColor(1, 1, 1, 1);</span>
+
+<span class="nc" id="L281">        font.draw(uiBatch, &quot;Stats&quot;, screenWidth / 2.5f, (screenHeight / 2f) - 200);</span>
+<span class="nc" id="L282">        font.getData().setScale(1f);</span>
+
+<span class="nc" id="L284">        renderControls(screenWidth, screenHeight);</span>
+<span class="nc" id="L285">        renderStats(screenWidth, screenHeight, positiveEventCounter, negativeEventCounter, hiddenEventCounter);</span>
+<span class="nc" id="L286">        font.draw(uiBatch, &quot;Avoid the dean and escape the maze in time!&quot;, screenWidth / 2.5f, (screenHeight / 2f) - 160);</span>
+
+<span class="nc" id="L288">        renderAchievements(screenWidth, screenHeight, achievements);</span>
+
+<span class="nc" id="L290">        uiBatch.end();</span>
+<span class="nc" id="L291">    }</span>
+
+
+
+
+    /**
+     * Display the start overlay, with instructions, controls and how to start the game.
+     * @param screenWidth - how many pixels wide the screen is.
+     * @param screenHeight - how many pixels high the screen is.
+     * @param achievements - A list of the player's achieved achievements.
+     */
+    public void renderStartOverlay(int screenWidth, int screenHeight, List&lt;AchievementSystem.Achievement&gt; achievements) {
+<span class="nc" id="L303">        uiBatch.begin();</span>
+<span class="nc" id="L304">        uiBatch.setColor(0, 0, 0, 0.5f);</span>
+<span class="nc" id="L305">        uiBatch.draw(missingTexture, 0, 0, screenWidth, screenHeight);</span>
+
+<span class="nc" id="L307">        font.getData().setScale(2f);</span>
+<span class="nc" id="L308">        font.setColor(1f, 0.84f, 0f, 1f);</span>
+<span class="nc" id="L309">        font.draw(uiBatch, &quot;Escape from Uni&quot;, screenWidth / 2.5f, (screenHeight / 2f) + 40);</span>
+
+<span class="nc" id="L311">        font.setColor(1, 1, 1, 1);</span>
+<span class="nc" id="L312">        font.draw(uiBatch, &quot;Instructions&quot;, screenWidth / 2.5f, (screenHeight / 2f) - 120);</span>
+<span class="nc" id="L313">        font.setColor(0f, 1f, 1f, 1f);</span>
+<span class="nc" id="L314">        font.draw(uiBatch, &quot;Achievements&quot;, (int) Math.round(screenWidth * 0.1), Math.round(screenHeight * 0.9));</span>
+
+<span class="nc" id="L316">        font.setColor(0, 1, 1, 1);</span>
+<span class="nc" id="L317">        font.draw(uiBatch, &quot;Press Space to Start!&quot;, screenWidth / 2.5f, (screenHeight / 2f) - 200);</span>
+<span class="nc" id="L318">        font.setColor(1, 1, 1, 1);</span>
+
+<span class="nc" id="L320">        font.getData().setScale(1f);</span>
+<span class="nc" id="L321">        renderControls(screenWidth, screenHeight);</span>
+<span class="nc" id="L322">        font.draw(uiBatch, &quot;Avoid the dean and escape the maze in time!&quot;, screenWidth / 2.5f, (screenHeight / 2f) - 160);</span>
+
+<span class="nc" id="L324">        renderAchievements(screenWidth, screenHeight, achievements);</span>
+
+<span class="nc" id="L326">        uiBatch.end();</span>
+<span class="nc" id="L327">    }</span>
+
+    private void renderAchievements(int screenWidth, int screenHeight, List&lt;AchievementSystem.Achievement&gt; achievements) {
+<span class="nc" id="L330">        int i = 0;</span>
+<span class="nc" id="L331">        int width = (int) Math.round(screenWidth * 0.05);</span>
+<span class="nc bnc" id="L332" title="All 2 branches missed.">        for (AchievementSystem.Achievement a : achievements) {</span>
+<span class="nc bnc" id="L333" title="All 2 branches missed.">            if (a.isAchieved()) {</span>
+<span class="nc" id="L334">                font.setColor(0.2f, 0.8f, 0.2f, 1);</span>
+            }
+            else {
+<span class="nc" id="L337">                font.setColor(0.8f, 0.2f, 0.2f, 1);</span>
+            }
+<span class="nc" id="L339">            font.draw(uiBatch, a.getAchievementName(),</span>
+<span class="nc" id="L340">                width, (int) Math.round(screenHeight * 0.9) - (i * 20) - 40); // -40 to offset from header</span>
+<span class="nc" id="L341">            i++;</span>
+<span class="nc" id="L342">        }</span>
+<span class="nc" id="L343">    }</span>
+
+    /**
+     * Render the controls list, tellign you all the buttons and what they do.
+     * @param screenWidth - how many pixels wide the screen is.
+     * @param screenHeight - how many pixels high the screen is.
+     */
+    private void renderControls(int screenWidth, int screenHeight) {
+<span class="nc" id="L351">        font.draw(uiBatch, &quot;Press P to pause / resume!&quot;, screenWidth / 2.5f, screenHeight / 2f);</span>
+<span class="nc" id="L352">        font.draw(uiBatch, &quot;Press ESC to quit.&quot;, screenWidth / 2.5f, (screenHeight / 2f) - 20);</span>
+<span class="nc" id="L353">        font.draw(uiBatch, &quot;Press E to interact.&quot;, screenWidth / 2.5f, (screenHeight / 2f) - 40);</span>
+<span class="nc" id="L354">        font.draw(uiBatch, &quot;Use WASD or arrow keys to move.&quot;, screenWidth / 2.5f, (screenHeight / 2f) - 60);</span>
+<span class="nc" id="L355">        font.draw(uiBatch, &quot;Press P to pause!&quot;, screenWidth / 2.5f, screenHeight / 2f);</span>
+<span class="nc" id="L356">        font.draw(uiBatch, &quot;Press F11 to Fullscreen.&quot;, screenWidth / 2.5f, (screenHeight / 2f) - 80);</span>
+<span class="nc" id="L357">    }</span>
+
+    /**
+     * Render the Stats at the bottom of the overlay, showing PowerUps collected, times caught and secrets found.
+     * @param screenWidth - how many pixels wide the screen is.
+     * @param screenHeight - how many pixels high the screen is.
+     * @param positiveEventCounter - Number of PowerUps collected.
+     * @param negativeEventCounter - Number of times caught by the dean.
+     * @param hiddenEventCounter - Number of secrets found.
+     */
+    private void renderStats(int screenWidth, int screenHeight, int positiveEventCounter, int negativeEventCounter, int hiddenEventCounter) {
+<span class="nc" id="L368">        font.draw(uiBatch, &quot;PowerUps Collected: &quot; + positiveEventCounter, screenWidth / 2.5f, (screenHeight / 2f) - 240);</span>
+<span class="nc" id="L369">        font.draw(uiBatch, &quot;Dean Captures: &quot; + negativeEventCounter, screenWidth / 2.5f, (screenHeight / 2f) - 260);</span>
+<span class="nc" id="L370">        font.draw(uiBatch, &quot;Secrets Found: &quot; + hiddenEventCounter, screenWidth / 2.5f, (screenHeight / 2f) - 280);</span>
+<span class="nc" id="L371">    }</span>
+
+    /**
+     * Display the win overlay, with your score and how much time was left.
+     * @param screenWidth - How many pixels wide the screen is.
+     * @param screenHeight - How many pixels high the screen is.
+     * @param timeLeft - How much time was left when the player escaped.
+     * @param score - the score the player managed to get.
+     * @param positiveEventCounter - Number of PowerUps collected.
+     * @param negativeEventCounter - Number of times caught by the dean.
+     * @param hiddenEventCounter - Number of secrets found.
+     */
+    public void renderWinOverlay(int screenWidth, int screenHeight, float timeLeft, int score, int positiveEventCounter, int negativeEventCounter, int hiddenEventCounter, List&lt;Score&gt; scoreboardScores) {
+<span class="nc" id="L384">        uiBatch.begin();</span>
+<span class="nc" id="L385">        uiBatch.setColor(0, 0, 0, 0.5f);</span>
+<span class="nc" id="L386">        uiBatch.draw(missingTexture, 0, 0, screenWidth, screenHeight);</span>
+<span class="nc" id="L387">        uiBatch.setColor(1, 1, 1, 1);</span>
+
+<span class="nc" id="L389">        font.getData().setScale(2f);</span>
+<span class="nc" id="L390">        font.draw(uiBatch, &quot;Stats&quot;, screenWidth / 2.5f, (screenHeight / 2f) - 200);</span>
+<span class="nc" id="L391">        font.draw(uiBatch, &quot;Scoreboard&quot;, (int) Math.round(screenWidth * 0.8), (int) Math.round(screenHeight *0.9));</span>
+<span class="nc" id="L392">        font.setColor(0, 1, 1, 1);</span>
+<span class="nc" id="L393">        font.draw(uiBatch, &quot;YOU WIN!&quot;, screenWidth / 2.5f, (screenHeight / 2f) + 40);</span>
+<span class="nc" id="L394">        font.setColor(1, 1, 1, 1);</span>
+<span class="nc" id="L395">        font.getData().setScale(1f);</span>
+<span class="nc" id="L396">        font.draw(uiBatch, TimerSystem.getClockDisplay(), screenWidth / 2.5f, screenHeight / 2f);</span>
+<span class="nc" id="L397">        font.draw(uiBatch, &quot;Score: &quot; + Integer.toString(score), screenWidth / 2.5f, (screenHeight / 2f) - 20);</span>
+<span class="nc" id="L398">        font.setColor(0, 1, 1, 1);</span>
+<span class="nc" id="L399">        font.draw(uiBatch,</span>
+            &quot;Enter Name: [&quot; + Main.playerNameInput + &quot;]&quot;,
+            screenWidth / 2.5f,
+            (screenHeight / 2f) - 40
+        );
+<span class="nc" id="L404">        font.draw(uiBatch, &quot;Press ENTER to submit&quot;, screenWidth / 2.5f, (screenHeight / 2f) - 60);</span>
+<span class="nc" id="L405">        font.setColor(1, 1, 1, 1);</span>
+<span class="nc" id="L406">        font.draw(uiBatch, &quot;Press ESC to quit.&quot;, screenWidth / 2.5f, (screenHeight / 2f) - 80);</span>
+<span class="nc" id="L407">        renderStats(screenWidth, screenHeight, positiveEventCounter, negativeEventCounter, hiddenEventCounter);</span>
+<span class="nc" id="L408">        renderScoreboard(screenWidth, screenHeight, scoreboardScores);</span>
+<span class="nc" id="L409">        uiBatch.end();</span>
+<span class="nc" id="L410">    }</span>
+
+    public void renderScoreboard(int screenWidth, int screenHeight, List&lt;Score&gt; scores) {
+<span class="nc" id="L413">        int i = 0;</span>
+<span class="nc" id="L414">        int width = (int) Math.round(screenWidth * 0.8);</span>
+<span class="nc bnc" id="L415" title="All 2 branches missed.">        for (Score s : scores) {</span>
+<span class="nc" id="L416">            int height = (int) Math.round((screenHeight * 0.9) - (i * 20) - 40); // -40 to offset from the header</span>
+<span class="nc" id="L417">            font.draw(uiBatch, s.getPlayerName() + &quot; : &quot; + Integer.toString(s.getScore()), width, height);</span>
+<span class="nc" id="L418">            i++;</span>
+<span class="nc" id="L419">        }</span>
+<span class="nc" id="L420">    }</span>
+
+    public void resetCamera() {
+        // Reset to the same position as when initialized
+<span class="nc" id="L424">        camera.setToOrtho(false, 480, 320);</span>
+<span class="nc" id="L425">        camera.update();</span>
+<span class="nc" id="L426">    }</span>
+
+
+    /**
+     * Display the lose overlay, for when you run out of time.
+     * @param screenWidth - How many pixels wide the screen is.
+     * @param screenHeight - How many pixels high the screen is.
+     * @param positiveEventCounter - Number of PowerUps collected.
+     * @param negativeEventCounter - Number of times caught by the dean.
+     * @param hiddenEventCounter - Number of secrets found.
+     */
+    public void renderLoseOverlay(int screenWidth, int screenHeight, int positiveEventCounter, int negativeEventCounter, int hiddenEventCounter, List&lt;Score&gt; scoreboardScores) {
+<span class="nc" id="L438">        uiBatch.begin();</span>
+<span class="nc" id="L439">        uiBatch.setColor(0, 0, 0, 0.5f);</span>
+<span class="nc" id="L440">        uiBatch.draw(missingTexture, 0, 0, screenWidth, screenHeight);</span>
+<span class="nc" id="L441">        uiBatch.setColor(1, 1, 1, 1);</span>
+
+<span class="nc" id="L443">        font.getData().setScale(2f);</span>
+<span class="nc" id="L444">        font.draw(uiBatch, &quot;Stats&quot;, screenWidth / 2.5f, (screenHeight / 2f) - 200);</span>
+<span class="nc" id="L445">        font.draw(uiBatch, &quot;Scoreboard&quot;, (int) Math.round(screenWidth * 0.8), (int) Math.round(screenHeight *0.9));</span>
+<span class="nc" id="L446">        font.setColor(1, 0, 0, 1);</span>
+<span class="nc" id="L447">        font.draw(uiBatch, &quot;TIME IS UP!&quot;, screenWidth / 2.5f, (screenHeight / 2f) + 40);</span>
+<span class="nc" id="L448">        font.setColor(1, 1, 1, 1);</span>
+<span class="nc" id="L449">        font.getData().setScale(1f);</span>
+<span class="nc" id="L450">        font.draw(uiBatch, &quot;Better luck next time.&quot;, screenWidth / 2.5f, screenHeight / 2f);</span>
+<span class="nc" id="L451">        font.draw(uiBatch, &quot;Press ESC to quit.&quot;, screenWidth / 2.5f, (screenHeight / 2f) - 40);</span>
+<span class="nc" id="L452">        renderStats(screenWidth, screenHeight, positiveEventCounter, negativeEventCounter, hiddenEventCounter);</span>
+<span class="nc" id="L453">        renderScoreboard(screenWidth, screenHeight, scoreboardScores);</span>
+<span class="nc" id="L454">        uiBatch.end();</span>
+<span class="nc" id="L455">    }</span>
+
+    /**
+     * Render the book page overlay if book is open.
+     * @param player - The player to check book state.
+     */
+    public void renderBookOverlay(Player player) {
+<span class="nc bnc" id="L462" title="All 4 branches missed.">        if (bookPageTexture != null &amp;&amp; player.isBookOpen()) {</span>
+<span class="nc" id="L463">            uiBatch.begin();</span>
+
+            // Semi-transparent dark background
+<span class="nc" id="L466">            uiBatch.setColor(0, 0, 0, 0.7f);</span>
+<span class="nc" id="L467">            uiBatch.draw(missingTexture, 0, 0, 960, 640);</span>
+<span class="nc" id="L468">            uiBatch.setColor(1, 1, 1, 1);</span>
+
+            // Calculate centered position for book page
+<span class="nc" id="L471">            float pageWidth = 600; // Adjust based on your image</span>
+<span class="nc" id="L472">            float pageHeight = 400; // Adjust based on your image</span>
+<span class="nc" id="L473">            float x = (960 - pageWidth) / 2;</span>
+<span class="nc" id="L474">            float y = (640 - pageHeight) / 2;</span>
+
+            // Draw book page
+<span class="nc" id="L477">            uiBatch.draw(bookPageTexture, x, y, pageWidth, pageHeight);</span>
+
+            // Add close instruction
+<span class="nc" id="L480">            font.setColor(1, 1, 1, 1);</span>
+<span class="nc" id="L481">            font.draw(uiBatch, &quot;Press B to close&quot;, 960 / 2, y - 20);</span>
+
+<span class="nc" id="L483">            uiBatch.end();</span>
+        }
+
+<span class="nc" id="L486">    }</span>
+
+    /**
+     * Render the blue time freeze overlay.
+     */
+    public void renderFreezeOverlay() {
+<span class="nc bnc" id="L492" title="All 2 branches missed.">        if (Main.isTimeFrozen()) {</span>
+<span class="nc" id="L493">            uiBatch.begin();</span>
+<span class="nc" id="L494">            uiBatch.setColor(Main.freezeOverlayColor);</span>
+<span class="nc" id="L495">            uiBatch.draw(missingTexture2, 0, 0, 960, 640);</span>
+<span class="nc" id="L496">            uiBatch.setColor(1, 1, 1, 1); // Reset color</span>
+
+
+<span class="nc" id="L499">            uiBatch.end();</span>
+        }
+<span class="nc" id="L501">    }</span>
+
+    /**
+     * Render the alcohol effects overlay.
+     */
+    public void renderAlcoholOverlay() {
+<span class="nc bnc" id="L507" title="All 2 branches missed.">        if (Main.isAlcoholActive()) {</span>
+<span class="nc" id="L508">            uiBatch.begin();</span>
+
+            // Get current color from alcohol system
+<span class="nc" id="L511">            Color alcoholColor = Main.getCurrentAlcoholColor();</span>
+<span class="nc bnc" id="L512" title="All 2 branches missed.">            if (alcoholColor != null) {</span>
+<span class="nc" id="L513">                uiBatch.setColor(alcoholColor);</span>
+<span class="nc" id="L514">                uiBatch.draw(missingTexture2, 0, 0, 960, 640);</span>
+            }
+
+<span class="nc" id="L517">            uiBatch.setColor(1, 1, 1, 1);</span>
+
+<span class="nc" id="L519">            uiBatch.end();</span>
+        }
+<span class="nc" id="L521">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Dean.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">core</a> &gt; <a href="index.source.html" class="el_package">io.github.eng1group9.entities</a> &gt; <span class="el_source">Dean.java</span></div><h1>Dean.java</h1><pre class="source lang-java linenums">package io.github.eng1group9.entities;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
+
+/**
+ * This is the Dean, the games negative event and antagonist.
+ * They will not collide with the walls, but will catch the player if they get too close.
+ * @param startPos - Where the dean will start.
+ * @param speed - How fast the dean will move.
+ * @param path - The deans path, it will follow this on loop.
+ */
+public class Dean extends MovingEntity {
+<span class="pc" id="L14">    private int reach = 2; // size of dean hitbox in tiles (3x3)</span>
+<span class="pc" id="L15">    private int moveNum = 0;</span>
+<span class="pc" id="L16">    private float nextTileDistance = 32;</span>
+    private Character[] path;
+    private Rectangle reachRectangle;
+    final Vector2 STARTPOS;
+
+    public Dean(Vector2 startPos, float speed, Character[] path) {
+<span class="nc" id="L22">        super(new Texture(&quot;Characters/deanAnimations.png&quot;), new int[] {4, 4,4,4} , 32, 32, speed);</span>
+<span class="nc" id="L23">        setScale(2);</span>
+<span class="nc" id="L24">        setPosition(startPos);</span>
+<span class="nc" id="L25">        setHitbox(new Rectangle());</span>
+
+<span class="nc" id="L27">        reachRectangle = new Rectangle();</span>
+<span class="nc" id="L28">        reachRectangle.setPosition(startPos.x - (reach * 16), startPos.y -(reach * 16));</span>
+<span class="nc" id="L29">        reachRectangle.setSize(reach * 32, reach * 32);</span>
+<span class="nc" id="L30">        setHitbox(new Rectangle());</span>
+<span class="nc" id="L31">        this.path = path;</span>
+<span class="nc" id="L32">        STARTPOS = startPos;</span>
+<span class="nc" id="L33">    }</span>
+
+
+    /**
+     * Headless constructor for Unit Tests.
+     * Bypasses Texture loading.
+     */
+    public Dean(Vector2 startPos, float speed, Character[] path, boolean isHeadless) {
+        // Pass null for texture, and true for isHeadless
+<span class="fc" id="L42">        super(null, new int[] {4, 4, 4, 4}, 32, 32, speed, isHeadless);</span>
+        
+<span class="fc" id="L44">        setScale(2);</span>
+<span class="fc" id="L45">        setPosition(startPos);</span>
+<span class="fc" id="L46">        setHitbox(new Rectangle());</span>
+
+<span class="fc" id="L48">        reachRectangle = new Rectangle();</span>
+<span class="fc" id="L49">        reachRectangle.setPosition(startPos.x - (reach * 16), startPos.y - (reach * 16));</span>
+<span class="fc" id="L50">        reachRectangle.setSize(reach * 32, reach * 32);</span>
+<span class="fc" id="L51">        setHitbox(new Rectangle());</span>
+<span class="fc" id="L52">        this.path = path;</span>
+<span class="fc" id="L53">        STARTPOS = startPos;</span>
+<span class="fc" id="L54">    }</span>
+
+    /**
+     * Move the dean along its set path.
+     * It will move in a given direction until it has moved one tile, then look at the next direction.
+     */
+    public void nextMove() {
+<span class="fc" id="L61">        Character direction = getNextDirection();</span>
+<span class="fc" id="L62">        float distance = move(direction);</span>
+<span class="fc" id="L63">        nextTileDistance -= distance;</span>
+<span class="pc bpc" id="L64" title="1 of 2 branches missed.">        if (!isFrozen()) updateAnimation(direction);</span>
+<span class="fc" id="L65">        reachRectangle.setPosition(getX() - (reach * 16), getY() - (reach * 16));</span>
+<span class="fc" id="L66">        haveIMovedOneTile();</span>
+<span class="fc" id="L67">    }</span>
+
+    /**
+     * Check if the Dean has move on tile yet, and if so move on to the next step in its path.
+     */
+    private void haveIMovedOneTile() {
+<span class="pc bpc" id="L73" title="1 of 2 branches missed.">        if (nextTileDistance &lt;= 0) {</span>
+<span class="nc" id="L74">            nextTileDistance = 32;</span>
+<span class="nc" id="L75">            moveNum++;</span>
+        }
+<span class="fc" id="L77">    }</span>
+
+    /**
+     * @return The direction the dean should move in next.
+     */
+    private Character getNextDirection() {
+<span class="pc bpc" id="L83" title="1 of 2 branches missed.">        if (moveNum &gt;= path.length) {</span>
+<span class="nc" id="L84">            moveNum = 0;</span>
+<span class="nc" id="L85">            setPosition(STARTPOS);</span>
+        }
+<span class="fc" id="L87">        return path[moveNum];</span>
+    }
+
+    /**
+     * Update the dean's animation based on its current direction.
+     * @param direction - The direction the dean is moving.
+     */
+    private void updateAnimation(Character direction) {
+<span class="pc bpc" id="L95" title="4 of 5 branches missed.">        switch (direction) {</span>
+                case 'U':
+<span class="fc" id="L97">                    changeAnimation(1);</span>
+<span class="fc" id="L98">                    break;</span>
+                case 'L':
+<span class="nc" id="L100">                    changeAnimation(3);</span>
+<span class="nc" id="L101">                    break;</span>
+                case 'D':
+<span class="nc" id="L103">                    changeAnimation(0);</span>
+<span class="nc" id="L104">                    break;</span>
+                case 'R':
+<span class="nc" id="L106">                    changeAnimation(2);</span>
+                    break;
+            }
+<span class="fc" id="L109">    }</span>
+
+    /**
+     * Check if a player is within the dean's reach.
+     * Will be false if the given player is invisible.
+     * @param player - The player to check against.
+     * @return True if the player is in the deans reach zone.
+     */
+    public boolean canReach(Player player) {
+<span class="nc bnc" id="L118" title="All 4 branches missed.">        return player.isColliding(reachRectangle) &amp;&amp; player.isVisible();</span>
+    }
+
+    /**
+     * Make the dean go back to the start of its path (first instruction).
+     */
+    public void restartPath() {
+<span class="nc" id="L125">        moveNum = 0;</span>
+<span class="nc" id="L126">        nextTileDistance = 32;</span>
+<span class="nc" id="L127">    }</span>
+
+    /**
+     * Resets the dean back to their starting position
+     */
+    public void resetPosition() {
+<span class="nc" id="L133">        setPosition(STARTPOS);</span>
+<span class="nc" id="L134">    }</span>
+
+    /**
+     * @return The dean's reach rectangle.
+     */
+    public Rectangle getReachRectangle() {
+<span class="nc" id="L140">        return reachRectangle;</span>
+    }
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

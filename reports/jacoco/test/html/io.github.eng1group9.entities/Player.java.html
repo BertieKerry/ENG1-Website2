@@ -1,0 +1,325 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Player.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">core</a> &gt; <a href="index.source.html" class="el_package">io.github.eng1group9.entities</a> &gt; <span class="el_source">Player.java</span></div><h1>Player.java</h1><pre class="source lang-java linenums">package io.github.eng1group9.entities;
+
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.math.Vector2;
+
+import io.github.eng1group9.systems.RenderingSystem;
+import io.github.eng1group9.systems.ToastSystem;
+
+/**
+ * Handles everything connected to the player.
+ * @param startPos - The players start positon.
+ * @param speed - How fast the player will move.
+ */
+public class Player extends MovingEntity {
+
+<span class="pc" id="L18">    private boolean hasExitKey = false;</span>
+<span class="pc" id="L19">    private boolean hasExitKey2 = false;</span>
+<span class="pc" id="L20">    private boolean hasChestRoomKey = false;</span>
+<span class="pc" id="L21">    private boolean hasRedPotion = false;</span>
+<span class="pc" id="L22">    private float invisibilityLeft = 0;</span>
+<span class="pc" id="L23">    private boolean invisibilityWarningGiven = true;</span>
+<span class="pc" id="L24">    private boolean hasEntranceKey = false;</span>
+
+<span class="pc" id="L26">    private boolean isOnStickyFloor = false;</span>
+<span class="pc" id="L27">    private float stickySlowFactor = 0.4f;</span>
+<span class="pc" id="L28">    private final float normalSpeed = getSpeed();</span>
+
+<span class="pc" id="L30">    private boolean hasSpeedBoost = false;</span>
+<span class="pc" id="L31">    private float speedBoostMultiplier = 2.0f;</span>
+<span class="pc" id="L32">    private float speedBoostDuration = 10.0f;</span>
+<span class="pc" id="L33">    private float speedBoostTimer = 0f;</span>
+
+<span class="pc" id="L35">    private boolean hasFakeKey = false;</span>
+
+<span class="pc" id="L37">    private boolean hasBook = false;</span>
+<span class="pc" id="L38">    private boolean bookOpen = false;</span>
+
+    public Player(Vector2 startPos, float speed) {
+<span class="nc" id="L41">        super(new Texture(&quot;Characters/playerAnimations.png&quot;), new int[] {4, 4, 4, 4, 4, 4, 4, 4} , 32, 32, speed);</span>
+<span class="nc" id="L42">        setPosition(startPos);</span>
+<span class="nc" id="L43">        setScale(2);</span>
+<span class="nc" id="L44">    }</span>
+
+    /**
+     * Headless constructor for Unit Tests.
+     * Bypasses Texture loading.
+     */
+    public Player(Vector2 startPos, float speed, boolean isHeadless) {
+<span class="fc" id="L51">        super(null, new int[] {4, 4, 4, 4, 4, 4, 4, 4}, 32, 32, speed, isHeadless);</span>
+<span class="fc" id="L52">        setPosition(startPos);</span>
+<span class="fc" id="L53">        setScale(2);</span>
+<span class="fc" id="L54">    }</span>
+
+    /**
+     * @return wether the player has the key to open the exit.
+     */
+    public boolean hasExitKey() {
+<span class="nc" id="L60">        return hasExitKey;</span>
+    }
+
+    public boolean hasExitKey2() {
+<span class="nc" id="L64">        return hasExitKey2;</span>
+    }
+
+    public boolean hasEntranceKey() {
+<span class="nc" id="L68">        return hasEntranceKey;</span>
+    }
+
+    /**
+     * Give the player the key to open the exit.
+     */
+    public void giveExitKey() {
+<span class="nc bnc" id="L75" title="All 2 branches missed.">        if (!hasExitKey) {</span>
+<span class="nc" id="L76">            hasExitKey = true;</span>
+<span class="nc" id="L77">            ToastSystem.addToast(&quot;You found the Exit Key!&quot;);</span>
+        }
+<span class="nc" id="L79">    }</span>
+
+    public void giveExitKey2() {
+<span class="nc bnc" id="L82" title="All 2 branches missed.">        if (!hasExitKey2) {</span>
+<span class="nc" id="L83">            hasExitKey2 = true;</span>
+<span class="nc" id="L84">            RenderingSystem.hideLayer(&quot;Key&quot;);</span>
+<span class="nc" id="L85">            ToastSystem.addToast(&quot;You found the Exit Key!&quot;);</span>
+        }
+<span class="nc" id="L87">    }</span>
+
+    public void giveEntranceKey() {
+<span class="nc bnc" id="L90" title="All 2 branches missed.">        if (!hasEntranceKey) {</span>
+<span class="nc" id="L91">            hasEntranceKey = true;</span>
+<span class="nc" id="L92">            ToastSystem.addToast(&quot;You found the key to the deans office! Don't let the teachers catch you..&quot;);</span>
+        }
+<span class="nc" id="L94">    }</span>
+
+    /**
+     * @return wether the player has the key to open the room with the chest.
+     */
+    public boolean hasChestRoomKey() {
+<span class="nc" id="L100">        return hasChestRoomKey;</span>
+    }
+
+    /**
+     * Give the player the key to open the room with the chest.
+     */
+    public void giveChestRoomKey() {
+<span class="nc bnc" id="L107" title="All 2 branches missed.">        if (!hasChestRoomKey) {</span>
+<span class="nc" id="L108">            hasChestRoomKey = true;</span>
+<span class="nc" id="L109">            RenderingSystem.hideLayer(&quot;Key&quot;);</span>
+<span class="nc" id="L110">            ToastSystem.addToast(&quot;You found the Storage Room Key!&quot;);</span>
+        }
+<span class="nc" id="L112">    }</span>
+
+    /**
+     * Give the player the red potion they must give to LongBoi.
+     */
+    public void giveRedPotion() {
+<span class="nc bnc" id="L118" title="All 2 branches missed.">        if (!hasRedPotion) {</span>
+<span class="nc" id="L119">            hasRedPotion = true;</span>
+<span class="nc" id="L120">            RenderingSystem.hideLayer(&quot;Potion&quot;);</span>
+<span class="nc" id="L121">            ToastSystem.addToast(&quot;You found a Red Potion?&quot;);</span>
+        }
+<span class="nc" id="L123">    }</span>
+
+    /**
+     * @return wether the player has the potion for LongBoi.
+     */
+    public boolean hasRedPotion() {
+<span class="nc" id="L129">        return hasRedPotion;</span>
+    }
+
+    /**
+     * Make the player invisible for 15s, so they cannot be spotted by the Dean.
+     */
+    public void becomeInvisible() {
+<span class="nc" id="L136">        invisibilityLeft = 15;</span>
+<span class="nc" id="L137">        invisibilityWarningGiven = false;</span>
+<span class="nc" id="L138">    }</span>
+
+    /**
+     * Move the player in the given direction
+     * @param direction The direction to move (D = Down, U = Up, L = Left, R = Right).
+     */
+    @Override
+    public float move(Character direction) {
+<span class="fc" id="L146">        int animationOffset = 0;</span>
+<span class="pc bpc" id="L147" title="1 of 2 branches missed.">        if (!isVisible()) animationOffset = 4;</span>
+<span class="pc bpc" id="L148" title="4 of 5 branches missed.">        switch (direction) {</span>
+                case 'U':
+<span class="fc" id="L150">                    changeAnimation(1 + animationOffset);</span>
+<span class="fc" id="L151">                    break;</span>
+                case 'D':
+<span class="nc" id="L153">                    changeAnimation(0 + animationOffset);</span>
+<span class="nc" id="L154">                    break;</span>
+                case 'L':
+<span class="nc" id="L156">                    changeAnimation(3 + animationOffset);</span>
+<span class="nc" id="L157">                    break;</span>
+                case 'R':
+<span class="nc" id="L159">                    changeAnimation(2 + animationOffset);</span>
+                    break;
+            }
+<span class="fc" id="L162">        return super.move(direction);</span>
+    }
+
+    /**
+     * @return Wether the player is visible (to the Dean).
+     */
+    public boolean isVisible() {
+<span class="pc bpc" id="L169" title="1 of 2 branches missed.">        return invisibilityLeft &lt;= 0;</span>
+    }
+
+    /**
+     * Used to update the players invisiblity and speed boost timer.
+     */
+    public void update() {
+
+<span class="nc bnc" id="L177" title="All 2 branches missed.">        if (!isVisible()) {</span>
+<span class="nc" id="L178">            invisibilityLeft -= Gdx.graphics.getDeltaTime();</span>
+<span class="nc bnc" id="L179" title="All 2 branches missed.">            if (isVisible()) {</span>
+<span class="nc" id="L180">                ToastSystem.addToast(&quot;Your invisibility has run out!&quot;);</span>
+<span class="nc" id="L181">                changeAnimation(1);</span>
+            }
+
+<span class="nc bnc" id="L184" title="All 4 branches missed.">            if (invisibilityLeft &lt;= 5 &amp;&amp; !invisibilityWarningGiven) {</span>
+<span class="nc" id="L185">                ToastSystem.addToast(&quot;Your invisibility is about to run out!&quot;);</span>
+<span class="nc" id="L186">                invisibilityWarningGiven = true;</span>
+            }
+
+        }
+
+<span class="nc bnc" id="L191" title="All 2 branches missed.">        if (hasSpeedBoost) {</span>
+<span class="nc" id="L192">            speedBoostTimer -= Gdx.graphics.getDeltaTime();</span>
+
+            // End speed boost
+<span class="nc bnc" id="L195" title="All 2 branches missed.">            if (speedBoostTimer &lt;= 0) {</span>
+<span class="nc" id="L196">                endSpeedBoost();</span>
+            }
+        }
+<span class="nc" id="L199">    }</span>
+
+    /**
+     * Activate a speed boost.
+     */
+    public void activateSpeedBoost() {
+<span class="nc bnc" id="L205" title="All 2 branches missed.">        if (!hasSpeedBoost) {</span>
+<span class="nc" id="L206">            hasSpeedBoost = true;</span>
+<span class="nc" id="L207">            setSpeed(normalSpeed * speedBoostMultiplier);</span>
+<span class="nc" id="L208">            speedBoostTimer = speedBoostDuration;</span>
+<span class="nc" id="L209">            ToastSystem.addToast(&quot;Speed Boost Activated! 2x Speed!&quot;, Color.CYAN);</span>
+
+<span class="nc" id="L211">            RenderingSystem.hideLayer(&quot;SpeedBoost&quot;);</span>
+        }
+<span class="nc" id="L213">    }</span>
+
+    /**
+     * End the speed boost effect.
+     */
+    public void endSpeedBoost() {
+<span class="nc bnc" id="L219" title="All 2 branches missed.">        if (hasSpeedBoost) {</span>
+<span class="nc" id="L220">            hasSpeedBoost = false;</span>
+<span class="nc" id="L221">            setSpeed(normalSpeed);</span>
+<span class="nc" id="L222">            ToastSystem.addToast(&quot;Speed boost ended&quot;, Color.WHITE);</span>
+        }
+<span class="nc" id="L224">    }</span>
+
+
+    /**
+     * @return whether the player is currently on sticky floor.
+     */
+    public boolean isOnStickyFloor() {
+<span class="nc" id="L231">        return isOnStickyFloor;</span>
+    }
+
+    /**
+     * Set whether the player is on sticky floor.
+     * @param onStickyFloor - True if player is on sticky floor.
+     */
+    public void setOnStickyFloor(boolean onStickyFloor) {
+<span class="nc" id="L239">        this.isOnStickyFloor = onStickyFloor;</span>
+<span class="nc bnc" id="L240" title="All 2 branches missed.">        if (onStickyFloor) {</span>
+
+
+<span class="nc" id="L243">            setSpeed(normalSpeed * stickySlowFactor);</span>
+<span class="nc" id="L244">            ToastSystem.addToast(&quot;EW! The floor is sticky!&quot;, Color.ORANGE);</span>
+        } else {
+            // Restore original speed
+<span class="nc" id="L247">            setSpeed(normalSpeed);</span>
+        }
+<span class="nc" id="L249">    }</span>
+
+    /**
+     * Set the slow factor for sticky floors.
+     * @param factor - Multiplier for speed (0.4 = 40% speed).
+     */
+    public void setStickySlowFactor(float factor) {
+<span class="nc" id="L256">        this.stickySlowFactor = factor;</span>
+<span class="nc" id="L257">    }</span>
+
+    /**
+     * @return whether the player has the fake key.
+     */
+    public boolean hasFakeKey() {
+<span class="nc" id="L263">        return hasFakeKey;</span>
+    }
+
+    /**
+     * Gives the player the fake key.
+     */
+    public void giveFakeKey() {
+<span class="nc bnc" id="L270" title="All 2 branches missed.">        if (!hasFakeKey) {</span>
+<span class="nc" id="L271">            hasFakeKey = true;</span>
+<span class="nc" id="L272">            ToastSystem.addToast(&quot;You found a key!&quot;, Color.YELLOW);</span>
+        }
+<span class="nc" id="L274">    }</span>
+
+    /**
+     * @return whether the player has collected the book.
+     */
+    public boolean hasBook() {
+<span class="nc" id="L280">        return hasBook;</span>
+    }
+
+    /**
+     * Give the player the book.
+     */
+    public void giveBook() {
+<span class="nc bnc" id="L287" title="All 2 branches missed.">        if (!hasBook) {</span>
+<span class="nc" id="L288">            hasBook = true;</span>
+<span class="nc" id="L289">            ToastSystem.addToast(&quot;You found a mysterious book!&quot;, Color.PURPLE);</span>
+<span class="nc" id="L290">            ToastSystem.addToast(&quot;Press B to read it&quot;, Color.PURPLE);</span>
+<span class="nc" id="L291">            RenderingSystem.hideLayer(&quot;Book&quot;);</span>
+        }
+<span class="nc" id="L293">    }</span>
+
+    /**
+     * Toggle whether the book is open/displayed.
+     */
+    public void toggleBook() {
+<span class="nc bnc" id="L299" title="All 2 branches missed.">        if (hasBook) {</span>
+<span class="nc bnc" id="L300" title="All 2 branches missed.">            bookOpen = !bookOpen;</span>
+<span class="nc bnc" id="L301" title="All 2 branches missed.">            if (bookOpen) {</span>
+<span class="nc" id="L302">                ToastSystem.addToast(&quot;Book opened&quot;, Color.WHITE);</span>
+            } else {
+<span class="nc" id="L304">                ToastSystem.addToast(&quot;Book closed&quot;, Color.WHITE);</span>
+            }
+        }
+<span class="nc" id="L307">    }</span>
+
+    /**
+     * @return whether the book is currently open/displayed.
+     */
+    public boolean isBookOpen() {
+<span class="nc" id="L313">        return bookOpen;</span>
+    }
+
+    /**
+     * Force close the book (e.g., when caught by dean).
+     */
+    public void closeBook() {
+<span class="nc" id="L320">        bookOpen = false;</span>
+<span class="nc" id="L321">    }</span>
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

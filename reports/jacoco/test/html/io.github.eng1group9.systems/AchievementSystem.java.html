@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AchievementSystem.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">core</a> &gt; <a href="index.source.html" class="el_package">io.github.eng1group9.systems</a> &gt; <span class="el_source">AchievementSystem.java</span></div><h1>AchievementSystem.java</h1><pre class="source lang-java linenums">package io.github.eng1group9.systems;
+import java.io.*;
+import java.util.*;
+
+public class AchievementSystem {
+
+    private static final String FILE_NAME = &quot;achievements.csv&quot;;
+
+<span class="nc" id="L9">    private final List&lt;Achievement&gt; achievements = new ArrayList&lt;&gt;();</span>
+
+    // All the achievement names are below
+<span class="nc" id="L12">    private String[] names = {&quot;Find LONGBOI&quot;,</span>
+                              &quot;Freeze the university&quot;,
+                              &quot;Achieve a score of 200000 or higher&quot;,
+                              &quot;Achieve a score of 400000 or higher&quot;,
+                              &quot;Escape with more than 4 minutes remaining&quot;,
+                              &quot;Beat the game!&quot;,
+                              &quot;Lose the game: This game is too hard :(&quot;,
+                                &quot;Get drunk?!&quot;};
+
+<span class="nc" id="L21">    public AchievementSystem() {</span>
+<span class="nc" id="L22">        loadAchievements();</span>
+<span class="nc" id="L23">    }</span>
+
+    public List&lt;Achievement&gt; getAchievements() {
+<span class="nc" id="L26">        return new ArrayList&lt;&gt;(achievements);</span>
+    }
+    /**
+     * Loads the csv file on launch
+     */
+    private void loadAchievements() {
+<span class="nc" id="L32">        File file = new File(FILE_NAME);</span>
+<span class="nc bnc" id="L33" title="All 2 branches missed.">        if (!file.exists()) {</span>
+<span class="nc" id="L34">            try (BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_NAME))) {</span>
+<span class="nc" id="L35">                writer.write(&quot;Achievement Name, Has been achieved&quot;);</span>
+<span class="nc" id="L36">                writer.newLine();</span>
+
+<span class="nc bnc" id="L38" title="All 2 branches missed.">                for (String name : names) {</span>
+<span class="nc" id="L39">                    writer.write(name + &quot;,&quot; + &quot;false&quot;);</span>
+<span class="nc" id="L40">                    writer.newLine();</span>
+
+<span class="nc" id="L42">                    achievements.add(new Achievement(name, false));</span>
+                }
+
+<span class="nc" id="L45">                System.out.println(&quot;Created new achievement save file at: &quot; + file.getAbsolutePath());</span>
+<span class="nc" id="L46">            } catch (IOException e) {</span>
+<span class="nc" id="L47">                e.printStackTrace();</span>
+<span class="nc" id="L48">            }</span>
+<span class="nc" id="L49">            return;</span>
+        }
+
+<span class="nc" id="L52">        try (BufferedReader reader = new BufferedReader(new FileReader(FILE_NAME))) {</span>
+            String line;
+<span class="nc" id="L54">            reader.readLine(); // Skip the header line</span>
+
+            // reads each line and correctly adds the information to achievements
+<span class="nc bnc" id="L57" title="All 2 branches missed.">            while ((line = reader.readLine()) != null) {</span>
+<span class="nc" id="L58">                String[] parts = line.split(&quot;,&quot;);</span>
+<span class="nc bnc" id="L59" title="All 2 branches missed.">                if (parts.length == 2) {</span>
+<span class="nc" id="L60">                    achievements.add(new Achievement(parts[0], Boolean.parseBoolean(parts[1])));</span>
+                }
+<span class="nc" id="L62">            }</span>
+
+<span class="nc" id="L64">        } catch (IOException | NumberFormatException e) {</span>
+<span class="nc" id="L65">            e.printStackTrace();</span>
+<span class="nc" id="L66">        }</span>
+<span class="nc" id="L67">    }</span>
+
+    /**
+     * Saves a change to the achievements in the csv file
+     */
+    private void saveAchievements() {
+<span class="nc" id="L73">        try (BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_NAME))) {</span>
+
+<span class="nc" id="L75">            writer.write(&quot;Achievement Name,Has been achieved&quot;);</span>
+<span class="nc" id="L76">            writer.newLine();</span>
+
+<span class="nc bnc" id="L78" title="All 2 branches missed.">            for (Achievement a : achievements) {</span>
+<span class="nc" id="L79">                writer.write(a.getAchievementName() + &quot;,&quot; + a.isAchieved());</span>
+<span class="nc" id="L80">                writer.newLine();</span>
+<span class="nc" id="L81">            }</span>
+
+<span class="nc" id="L83">        } catch (IOException e) {</span>
+<span class="nc" id="L84">            e.printStackTrace();</span>
+<span class="nc" id="L85">        }</span>
+<span class="nc" id="L86">    }</span>
+
+    /**
+     * Used to when an achievement is achieved by the player
+     *
+     * @param name: Name of the achievement see &quot;names&quot; above
+     *
+     * @return boolean: whether the achievement status was updated
+     * -&gt; note: if the achievement was already achieved the function returns false, this boolean is used when displaying
+     *          new achievements
+     */
+    public boolean achieveThis(String name) {
+
+<span class="nc" id="L99">        boolean updated = false;</span>
+
+<span class="nc bnc" id="L101" title="All 2 branches missed.">        for (Achievement a : achievements) {</span>
+<span class="nc bnc" id="L102" title="All 2 branches missed.">            if (a.getAchievementName().equals(name)) {</span>
+<span class="nc bnc" id="L103" title="All 2 branches missed.">                if (a.isAchieved()) {</span>
+<span class="nc" id="L104">                    System.out.println(name + &quot; was already achieved&quot;);</span>
+<span class="nc" id="L105">                    return false;</span>
+                }
+
+<span class="nc" id="L108">                a.setAchieved();</span>
+<span class="nc" id="L109">                System.out.println(name + &quot; was updated to achieved&quot;);</span>
+<span class="nc" id="L110">                updated = true;</span>
+<span class="nc" id="L111">                break;</span>
+            }
+<span class="nc" id="L113">        }</span>
+
+<span class="nc bnc" id="L115" title="All 2 branches missed.">        if (updated) {</span>
+<span class="nc" id="L116">            saveAchievements();</span>
+<span class="nc" id="L117">            return true;</span>
+        }
+
+<span class="nc" id="L120">        return false;</span>
+    }
+
+    /**
+     * Used to keep achievement names and whether they are achieved in one object to make things easier
+     */
+    public static class Achievement {
+        private final String name;
+        private boolean achieved;
+
+<span class="nc" id="L130">        public Achievement(String name, boolean achieved) {</span>
+<span class="nc" id="L131">            this.name = name;</span>
+<span class="nc" id="L132">            this.achieved = achieved;</span>
+<span class="nc" id="L133">        }</span>
+
+        public String getAchievementName() {
+<span class="nc" id="L136">            return name;</span>
+        }
+
+        public boolean isAchieved() {
+<span class="nc" id="L140">            return achieved;</span>
+        }
+
+        public void setAchieved() {
+<span class="nc" id="L144">            this.achieved = true;</span>
+<span class="nc" id="L145">        }</span>
+    }
+
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

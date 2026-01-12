@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ScoreboardSystem.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">core</a> &gt; <a href="index.source.html" class="el_package">io.github.eng1group9.systems</a> &gt; <span class="el_source">ScoreboardSystem.java</span></div><h1>ScoreboardSystem.java</h1><pre class="source lang-java linenums">package io.github.eng1group9.systems;
+import java.io.*;
+import java.util.*;
+
+
+public class ScoreboardSystem {
+
+    private static final int NUMBER_OF_SCORES = 5;
+    private static final String FILE_NAME = &quot;scoreboard.csv&quot;;
+
+<span class="nc" id="L11">    private final List&lt;Score&gt; scores = new ArrayList&lt;&gt;();</span>
+
+<span class="nc" id="L13">    public ScoreboardSystem() {</span>
+<span class="nc" id="L14">        loadFromFile();</span>
+<span class="nc" id="L15">        System.out.println(&quot;Scoreboard loaded. File should be at: &quot; + new File(FILE_NAME).getAbsolutePath());</span>
+<span class="nc" id="L16">    }</span>
+
+    /** Adds a score to the scoreboard and then sorts the scores and removes the lowest one from the board, saving the change
+    to the csv file once done
+
+     @param playerName: the current player's name
+     @param score: the score the player achieved
+     */
+    public void addScore(String playerName, int score) {
+<span class="nc" id="L25">        scores.add(new Score(playerName, score));</span>
+<span class="nc" id="L26">        sortScores();</span>
+<span class="nc" id="L27">        saveToFile();</span>
+<span class="nc" id="L28">    }</span>
+
+    /**
+     * Gets the top scores from the csv file
+     *
+     * @return List&lt;Score&gt;: the top scores
+     */
+    public List&lt;Score&gt; getTopScores() {
+<span class="nc" id="L36">        return new ArrayList&lt;&gt;(scores);</span>
+    }
+
+    private void saveToFile() {
+<span class="nc" id="L40">        try (BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_NAME))) {</span>
+<span class="nc" id="L41">            writer.write(&quot;Player,Score&quot;);</span>
+<span class="nc" id="L42">            writer.newLine();</span>
+
+<span class="nc bnc" id="L44" title="All 2 branches missed.">            for (Score s : scores) {</span>
+<span class="nc" id="L45">                writer.write(s.playerName + &quot;,&quot; + s.score);</span>
+<span class="nc" id="L46">                writer.newLine();</span>
+<span class="nc" id="L47">            }</span>
+<span class="nc" id="L48">        } catch (IOException e) {</span>
+<span class="nc" id="L49">            e.printStackTrace();</span>
+<span class="nc" id="L50">        }</span>
+<span class="nc" id="L51">    }</span>
+
+    /**
+     * Loads the csv file or creates a new file if one does not already exist
+     */
+    private void loadFromFile() {
+<span class="nc" id="L57">        File file = new File(FILE_NAME);</span>
+<span class="nc bnc" id="L58" title="All 2 branches missed.">        if (!file.exists()) {</span>
+<span class="nc" id="L59">            try (BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_NAME))) {</span>
+<span class="nc" id="L60">                writer.write(&quot;Player,Score&quot;);</span>
+<span class="nc" id="L61">                writer.newLine();</span>
+<span class="nc" id="L62">                System.out.println(&quot;Created new scores file at: &quot; + file.getAbsolutePath());</span>
+<span class="nc" id="L63">            } catch (IOException e) {</span>
+<span class="nc" id="L64">                e.printStackTrace();</span>
+<span class="nc" id="L65">            }</span>
+<span class="nc" id="L66">            return;</span>
+        }
+
+<span class="nc" id="L69">        try (BufferedReader reader = new BufferedReader(new FileReader(FILE_NAME))) {</span>
+            String line;
+<span class="nc" id="L71">            reader.readLine(); // Skip the header line</span>
+
+            // reads each line and correctly adds the information to scores
+<span class="nc bnc" id="L74" title="All 2 branches missed.">            while ((line = reader.readLine()) != null) {</span>
+<span class="nc" id="L75">                String[] parts = line.split(&quot;,&quot;);</span>
+<span class="nc bnc" id="L76" title="All 2 branches missed.">                if (parts.length == 2) {</span>
+<span class="nc" id="L77">                    scores.add(new Score(parts[0], Integer.parseInt(parts[1])));</span>
+                }
+<span class="nc" id="L79">            }</span>
+
+<span class="nc" id="L81">            sortScores();</span>
+
+<span class="nc" id="L83">        } catch (IOException | NumberFormatException e) {</span>
+<span class="nc" id="L84">            e.printStackTrace();</span>
+<span class="nc" id="L85">        }</span>
+<span class="nc" id="L86">    }</span>
+
+    /**
+     * Sorts and orders the scores in descending order for displaying purposes
+     */
+    private void sortScores() {
+        // Sorts scores in descending order
+<span class="nc" id="L93">        scores.sort((a,b) -&gt; Integer.compare(b.score, a.score)); // can swap b and a for ascending</span>
+
+        // Only gets the top n scores based on the defined NUMBER_OF_SCORES
+<span class="nc bnc" id="L96" title="All 2 branches missed.">        if (scores.size() &gt; NUMBER_OF_SCORES) {</span>
+<span class="nc" id="L97">            scores.subList(NUMBER_OF_SCORES, scores.size()).clear(); // gets rid of any scores beyond the designated number of elements</span>
+        }
+<span class="nc" id="L99">    }</span>
+
+    // Stores the players name and score in a single object for ease of use
+    public static class Score {
+        private final String playerName;
+        private final int score;
+
+<span class="nc" id="L106">        public Score(String playerName, int score) {</span>
+<span class="nc" id="L107">            this.playerName = playerName;</span>
+<span class="nc" id="L108">            this.score = score;</span>
+<span class="nc" id="L109">        }</span>
+
+        public String getPlayerName() {
+<span class="nc" id="L112">            return playerName;</span>
+        }
+
+        public int getScore() {
+<span class="nc" id="L116">            return score;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

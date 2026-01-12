@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>InputSystem.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">core</a> &gt; <a href="index.source.html" class="el_package">io.github.eng1group9.systems</a> &gt; <span class="el_source">InputSystem.java</span></div><h1>InputSystem.java</h1><pre class="source lang-java linenums">package io.github.eng1group9.systems;
+
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
+import io.github.eng1group9.Main;
+import io.github.eng1group9.entities.Player;
+
+/**
+* Handles user input, both for movement and misc inputs.
+*/
+<span class="fc" id="L11">public class InputSystem {</span>
+    /**
+     * Processes user input, both for movement and misc inputs.
+     * @param player - the player to move based on input.
+     */
+    public void handle(Player player, Main.GameState gameState) {
+<span class="nc bnc" id="L17" title="All 2 branches missed.">            if (Gdx.input.isKeyJustPressed(Input.Keys.F11)) {</span>
+<span class="nc" id="L18">                Main.instance.toggleFullscreen();</span>
+            }
+<span class="nc bnc" id="L20" title="All 2 branches missed.">            if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {</span>
+<span class="nc" id="L21">                Gdx.app.exit(); // Close the game</span>
+            }
+<span class="nc bnc" id="L23" title="All 2 branches missed.">            if (Gdx.input.isKeyJustPressed(Input.Keys.P)) {</span>
+<span class="nc" id="L24">                Main.togglePause();</span>
+            }
+<span class="nc bnc" id="L26" title="All 2 branches missed.">            if (Gdx.input.isKeyJustPressed(Input.Keys.F2)) {</span>
+<span class="nc bnc" id="L27" title="All 2 branches missed.">                Main.instance.showCollision = !Main.instance.showCollision;</span>
+            }
+<span class="nc bnc" id="L29" title="All 2 branches missed.">            if (Gdx.input.isKeyJustPressed(Input.Keys.E)) {</span>
+<span class="nc" id="L30">                TriggerSystem.checkInteractTriggers(player);</span>
+            }
+<span class="nc bnc" id="L32" title="All 2 branches missed.">            if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {</span>
+<span class="nc" id="L33">                Main.startGame();</span>
+            }
+
+<span class="nc bnc" id="L36" title="All 2 branches missed.">            if (Gdx.input.isKeyJustPressed(Input.Keys.B)) {</span>
+<span class="nc" id="L37">                player.toggleBook();</span>
+            }
+
+<span class="nc bnc" id="L40" title="All 2 branches missed.">            if (!player.isFrozen()) {</span>
+<span class="nc bnc" id="L41" title="All 4 branches missed.">                if (Gdx.input.isKeyPressed(Input.Keys.W) || Gdx.input.isKeyPressed(Input.Keys.UP)) {</span>
+<span class="nc" id="L42">                    player.move('U');</span>
+                }
+<span class="nc bnc" id="L44" title="All 4 branches missed.">                if (Gdx.input.isKeyPressed(Input.Keys.A) || Gdx.input.isKeyPressed(Input.Keys.LEFT)) {</span>
+<span class="nc" id="L45">                    player.move('L');</span>
+                }
+<span class="nc bnc" id="L47" title="All 4 branches missed.">                if (Gdx.input.isKeyPressed(Input.Keys.S) || Gdx.input.isKeyPressed(Input.Keys.DOWN)) {</span>
+<span class="nc" id="L48">                    player.move('D');</span>
+                }
+<span class="nc bnc" id="L50" title="All 4 branches missed.">                if (Gdx.input.isKeyPressed(Input.Keys.D) || Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {</span>
+<span class="nc" id="L51">                    player.move('R');</span>
+                }
+            }
+
+            // IF THE GAME HAS BEEN WON
+<span class="nc bnc" id="L56" title="All 2 branches missed.">            if (gameState == Main.GameState.WIN) {</span>
+                // Handles the typing of A-Z keys and adds them to the playerNameInput variable in main (MAX LENGTH 12)
+<span class="nc bnc" id="L58" title="All 2 branches missed.">                for (int key = Input.Keys.A; key &lt;= Input.Keys.Z; key++) {</span>
+<span class="nc bnc" id="L59" title="All 4 branches missed.">                    if (Gdx.input.isKeyJustPressed(key) &amp;&amp; Main.playerNameInput.length() &lt;= 12) {</span>
+<span class="nc" id="L60">                        Main.playerNameInput.append(Input.Keys.toString(key));</span>
+                    }
+                }
+                // Allows the player to use BACKSPACE to delete previously added characters
+<span class="nc bnc" id="L64" title="All 4 branches missed.">                if (Gdx.input.isKeyJustPressed(Input.Keys.BACKSPACE) &amp;&amp; Main.playerNameInput.length() &gt; 0) {</span>
+<span class="nc" id="L65">                    Main.playerNameInput.deleteCharAt(</span>
+<span class="nc" id="L66">                        Main.playerNameInput.length() - 1</span>
+                    );
+                }
+
+                // Submits the players score (ENTER to submit)
+<span class="nc bnc" id="L71" title="All 4 branches missed.">                if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER) &amp;&amp; !Main.nameSubmitted) {</span>
+<span class="nc bnc" id="L72" title="All 2 branches missed.">                    if (Main.playerNameInput.length() &gt; 0) {</span>
+<span class="nc" id="L73">                    Main.scoreboard.addScore(</span>
+<span class="nc" id="L74">                        Main.playerNameInput.toString(),</span>
+                        Main.score
+                    );
+<span class="nc" id="L77">                    Main.nameSubmitted = true;</span>
+                    }
+                    else {
+<span class="nc" id="L80">                        Main.scoreboard.addScore(</span>
+                            &quot;PLAYER&quot;,
+                            Main.score
+                        );
+<span class="nc" id="L84">                        Main.nameSubmitted = true;</span>
+                    }
+                }
+
+        }
+<span class="nc" id="L89">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

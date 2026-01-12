@@ -1,0 +1,337 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TriggerSystem.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">core</a> &gt; <a href="index.source.html" class="el_package">io.github.eng1group9.systems</a> &gt; <span class="el_source">TriggerSystem.java</span></div><h1>TriggerSystem.java</h1><pre class="source lang-java linenums">package io.github.eng1group9.systems;
+
+import java.util.LinkedList;
+import java.util.List;
+
+import com.badlogic.gdx.maps.MapLayer;
+import com.badlogic.gdx.maps.MapObject;
+import com.badlogic.gdx.maps.MapObjects;
+import com.badlogic.gdx.maps.objects.RectangleMapObject;
+import com.badlogic.gdx.maps.tiled.TiledMap;
+import com.badlogic.gdx.maps.tiled.TmxMapLoader;
+import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
+
+import io.github.eng1group9.Main;
+import io.github.eng1group9.entities.Player;
+
+/**
+ * The system used to make things happen if a player enters a given area.
+ * The Triggers layer on the TileMap contains Rectangles used to denote these areas.
+ * The name of the Rectangle is in the form &quot;ID,triggerType&quot;
+ * which is used to determine what happens when it is triggered, and how.
+ *
+ * triggerType must be in the form T or I
+ * for Touch or Interact
+ */
+<span class="nc" id="L27">public class TriggerSystem {</span>
+
+    /**
+     * A Trigger with a zone and a player it relates too.
+     */
+    static class Trigger {
+        private int ID;
+        private Rectangle zone;
+<span class="nc" id="L35">        private boolean activateOnTouch = false;</span>
+<span class="nc" id="L36">        private boolean triggered = false;</span>
+
+<span class="nc" id="L38">        public Trigger(int ID, boolean activateOnTouch, Rectangle zone) {</span>
+<span class="nc" id="L39">            this.ID = ID;</span>
+<span class="nc" id="L40">            this.activateOnTouch = activateOnTouch;</span>
+<span class="nc" id="L41">            this.zone = zone;</span>
+<span class="nc" id="L42">        }</span>
+
+        public int getID() {
+<span class="nc" id="L45">            return ID;</span>
+        }
+
+        public boolean isActivateOnTouch() {
+<span class="nc" id="L49">            return activateOnTouch;</span>
+        }
+
+        public boolean isActivateOnInteract() {
+<span class="nc bnc" id="L53" title="All 2 branches missed.">            return !activateOnTouch;</span>
+        }
+
+        public Rectangle getZone() {
+<span class="nc" id="L57">            return zone;</span>
+        }
+
+        public boolean playerInZone(Player player) {
+<span class="nc" id="L61">            return player.isColliding(zone);</span>
+        }
+
+        public boolean isTriggered() {
+<span class="nc" id="L65">            return triggered;</span>
+        }
+
+        public void setTriggered(boolean triggered) {
+<span class="nc" id="L69">            this.triggered = triggered;</span>
+<span class="nc" id="L70">        }</span>
+    }
+
+<span class="nc" id="L73">    private static List&lt;Trigger&gt; touchTriggers = new LinkedList&lt;&gt;();</span>
+<span class="nc" id="L74">    private static List&lt;Trigger&gt; interactTriggers = new LinkedList&lt;&gt;();</span>
+
+    public static void init(String tmxPath) {
+<span class="nc" id="L77">        touchTriggers.clear();</span>
+<span class="nc" id="L78">        interactTriggers.clear();</span>
+
+<span class="nc" id="L80">        List&lt;Trigger&gt; triggers = getTriggers(tmxPath);</span>
+<span class="nc bnc" id="L81" title="All 2 branches missed.">        for (Trigger t : triggers) {</span>
+<span class="nc bnc" id="L82" title="All 2 branches missed.">            if (t.isActivateOnTouch()) {</span>
+<span class="nc" id="L83">                touchTriggers.add(t);</span>
+            }
+            else {
+<span class="nc" id="L86">                interactTriggers.add(t);</span>
+            }
+<span class="nc" id="L88">        }</span>
+<span class="nc" id="L89">    }</span>
+
+    public static void initFromMap(TiledMap map) {
+        // Clear existing triggers when loading a new map
+<span class="nc" id="L93">        touchTriggers.clear();</span>
+<span class="nc" id="L94">        interactTriggers.clear();</span>
+
+<span class="nc" id="L96">        List&lt;Trigger&gt; triggers = getTriggersFromMap(map);</span>
+<span class="nc bnc" id="L97" title="All 2 branches missed.">        for (Trigger t : triggers) {</span>
+<span class="nc bnc" id="L98" title="All 2 branches missed.">            if (t.isActivateOnTouch()) {</span>
+<span class="nc" id="L99">                touchTriggers.add(t);</span>
+            }
+            else {
+<span class="nc" id="L102">                interactTriggers.add(t);</span>
+            }
+<span class="nc" id="L104">        }</span>
+<span class="nc" id="L105">    }</span>
+
+    /**
+     * Return a list of all triggers in a tileset.
+     * This should only be used when first loading the tileset.
+     * @param tmxPath - The path to the tileset (.tmx file).
+     * @return A list of all Triggers.
+     */
+    public static List&lt;Trigger&gt; getTriggers(String tmxPath) {
+<span class="nc" id="L114">        TiledMap map = new TmxMapLoader().load(tmxPath);</span>
+<span class="nc" id="L115">        MapLayer triggerLayer = map.getLayers().get(&quot;Triggers&quot;);</span>
+<span class="nc" id="L116">        MapObjects triggerObjects = triggerLayer.getObjects();</span>
+<span class="nc" id="L117">        List&lt;Trigger&gt; triggers = new LinkedList&lt;&gt;();</span>
+
+<span class="nc bnc" id="L119" title="All 2 branches missed.">        for (MapObject mapObject : triggerObjects) {</span>
+<span class="nc" id="L120">            RectangleMapObject recMapObj = (RectangleMapObject) mapObject;</span>
+<span class="nc" id="L121">            int ID = Integer.parseInt(recMapObj.getName().split(&quot;,&quot;)[0]);</span>
+
+<span class="nc" id="L123">            Rectangle zone = recMapObj.getRectangle();</span>
+<span class="nc" id="L124">            zone.set(zone.x * 2, zone.y * 2, zone.width * 2, zone.height * 2);</span>
+
+<span class="nc" id="L126">            String triggerType = recMapObj.getName().split(&quot;,&quot;)[1];</span>
+<span class="nc" id="L127">            Trigger t = new Trigger(ID, triggerType.equals(&quot;T&quot;), zone);</span>
+<span class="nc" id="L128">            triggers.add(t);</span>
+<span class="nc" id="L129">            System.out.println(&quot;Loaded Trigger &quot; + t.getID());</span>
+<span class="nc" id="L130">        }</span>
+<span class="nc" id="L131">        return triggers;</span>
+    }
+
+    private static List&lt;Trigger&gt; getTriggersFromMap(TiledMap map) {
+        try {
+<span class="nc" id="L136">            MapLayer triggerLayer = map.getLayers().get(&quot;Triggers&quot;);</span>
+
+<span class="nc bnc" id="L138" title="All 2 branches missed.">            if (triggerLayer == null) {</span>
+<span class="nc" id="L139">                System.err.println(&quot;Warning: No 'Triggers' layer found in map&quot;);</span>
+<span class="nc" id="L140">                return new LinkedList&lt;&gt;();</span>
+            }
+
+<span class="nc" id="L143">            MapObjects triggerObjects = triggerLayer.getObjects();</span>
+<span class="nc" id="L144">            List&lt;Trigger&gt; triggers = new LinkedList&lt;&gt;();</span>
+
+<span class="nc bnc" id="L146" title="All 2 branches missed.">            for (MapObject mapObject : triggerObjects) {</span>
+<span class="nc" id="L147">                RectangleMapObject recMapObj = (RectangleMapObject) mapObject;</span>
+<span class="nc" id="L148">                int ID = Integer.parseInt(recMapObj.getName().split(&quot;,&quot;)[0]);</span>
+
+<span class="nc" id="L150">                Rectangle zone = recMapObj.getRectangle();</span>
+<span class="nc" id="L151">                zone.set(zone.x * 2, zone.y * 2, zone.width * 2, zone.height * 2);</span>
+
+<span class="nc" id="L153">                String triggerType = recMapObj.getName().split(&quot;,&quot;)[1];</span>
+<span class="nc" id="L154">                Trigger t = new Trigger(ID, triggerType.equals(&quot;T&quot;), zone);</span>
+<span class="nc" id="L155">                triggers.add(t);</span>
+<span class="nc" id="L156">                System.out.println(&quot;Loaded Trigger &quot; + t.getID());</span>
+<span class="nc" id="L157">            }</span>
+<span class="nc" id="L158">            return triggers;</span>
+<span class="nc" id="L159">        } catch (Exception e) {</span>
+<span class="nc" id="L160">            System.err.println(&quot;Error extracting triggers from map&quot;);</span>
+<span class="nc" id="L161">            e.printStackTrace();</span>
+<span class="nc" id="L162">            return new LinkedList&lt;&gt;();</span>
+        }
+    }
+
+    /**
+     * @return A list of all touch triggers in the system (Name = ID,T).
+     */
+    public static List&lt;Trigger&gt; getTouchTriggers() {
+<span class="nc" id="L170">        return touchTriggers;</span>
+    }
+
+    /**
+     * @return A list of all touch triggers in the system (Name = ID,I).
+     */
+    public static List&lt;Trigger&gt; getInteractTriggers() {
+<span class="nc" id="L177">        return interactTriggers;</span>
+    }
+
+    /**
+     * Remove a trigger from the system.
+     * @param ID - The ID of the trigger which should be removed.
+     * @return True if it was successful.
+     */
+    public static boolean remove(int ID) {
+<span class="nc bnc" id="L186" title="All 2 branches missed.">        for (Trigger t : touchTriggers) {</span>
+<span class="nc bnc" id="L187" title="All 2 branches missed.">            if (t.getID() == ID) {</span>
+<span class="nc" id="L188">                touchTriggers.remove(t);</span>
+<span class="nc" id="L189">                return true;</span>
+            }
+<span class="nc" id="L191">        }</span>
+<span class="nc bnc" id="L192" title="All 2 branches missed.">        for (Trigger t : interactTriggers) {</span>
+<span class="nc bnc" id="L193" title="All 2 branches missed.">            if (t.getID() == ID) {</span>
+<span class="nc" id="L194">                interactTriggers.remove(t);</span>
+<span class="nc" id="L195">                return true;</span>
+            }
+<span class="nc" id="L197">        }</span>
+<span class="nc" id="L198">        return false;</span>
+    }
+
+    /**
+     * @return A list of all triggers in the system (both types).
+     */
+    public static List&lt;Trigger&gt; getTriggers() {
+<span class="nc" id="L205">        List&lt;Trigger&gt; triggers = new LinkedList&lt;&gt;();</span>
+<span class="nc" id="L206">        triggers.addAll(touchTriggers);</span>
+<span class="nc" id="L207">        triggers.addAll(interactTriggers);</span>
+<span class="nc" id="L208">        return triggers;</span>
+    }
+
+    /**
+     * Will check if the given player is staninding in any triggers, and trigger them if so.
+     * @param player The player which is being checked.
+     * This is run each time the player presses E.
+     */
+    public static void checkInteractTriggers(Player player) {
+        // Use a copy to avoid ConcurrentModificationException when map loads
+<span class="nc" id="L218">        List&lt;Trigger&gt; triggersToCheck = new LinkedList&lt;&gt;(interactTriggers);</span>
+
+<span class="nc bnc" id="L220" title="All 2 branches missed.">        for (Trigger t : triggersToCheck) {</span>
+<span class="nc bnc" id="L221" title="All 2 branches missed.">            if (t.playerInZone(player)) {</span>
+<span class="nc" id="L222">                System.out.println(&quot;Triggered &quot; + t.getID() + &quot;!&quot;);</span>
+<span class="nc" id="L223">                trigger(t.getID(), player);</span>
+            }
+<span class="nc" id="L225">        }</span>
+<span class="nc" id="L226">    }</span>
+
+
+    /**
+     * Will check if the given player is staninding in any triggers, and trigger them if so.
+     * @param player The player which is being checked.
+     * This is run each frame.
+     */
+    public static void checkTouchTriggers(Player player) {
+        // Use a copy to avoid ConcurrentModificationException when map loads
+<span class="nc" id="L236">        List&lt;Trigger&gt; triggersToCheck = new LinkedList&lt;&gt;(touchTriggers);</span>
+<span class="nc" id="L237">        boolean wasOnStickyFloor = player.isOnStickyFloor();</span>
+<span class="nc" id="L238">        boolean isOnStickyFloorNow = false;</span>
+
+
+<span class="nc bnc" id="L241" title="All 2 branches missed.">        for (Trigger t : triggersToCheck) {</span>
+<span class="nc bnc" id="L242" title="All 2 branches missed.">            if (t.playerInZone(player)) {</span>
+                // Check if this is a sticky floor trigger
+<span class="nc bnc" id="L244" title="All 2 branches missed.">                if (t.getID() == 17) {</span>
+<span class="nc" id="L245">                    isOnStickyFloorNow = true;</span>
+
+<span class="nc bnc" id="L247" title="All 2 branches missed.">                } else if (!t.isTriggered()) {</span>
+                    // Make sure to avoid repeat firing
+<span class="nc" id="L249">                    trigger(t.getID(), player);</span>
+<span class="nc" id="L250">                    t.setTriggered(true);</span>
+                }
+            }
+<span class="nc" id="L253">        }</span>
+            // Apply sticky floor effect
+<span class="nc bnc" id="L255" title="All 2 branches missed.">        if (wasOnStickyFloor != isOnStickyFloorNow) {</span>
+<span class="nc" id="L256">            player.setOnStickyFloor(isOnStickyFloorNow);</span>
+        }
+<span class="nc" id="L258">    }</span>
+
+    /**
+     * Will act based on which trigger has been activated
+     * @param ID the trigger that has been activated
+     */
+    public static void trigger(int ID, Player player) {
+<span class="nc bnc" id="L265" title="All 22 branches missed.">        switch (ID) {</span>
+            case 0: // open the main door
+<span class="nc" id="L267">                Main.winGame();</span>
+<span class="nc" id="L268">                break;</span>
+            case 1: // Get the chest room key
+<span class="nc" id="L270">                player.giveChestRoomKey();</span>
+<span class="nc" id="L271">                break;</span>
+            case 2: // Get the scroll
+<span class="nc" id="L273">                Main.getScroll();</span>
+<span class="nc" id="L274">                break;</span>
+            case 3: // Standing by the switch
+<span class="nc" id="L276">                Main.dropSpikes();</span>
+<span class="nc" id="L277">                break;</span>
+            case 4: // Standing by the mouse hole
+<span class="nc" id="L279">                Main.checkForLongboi();</span>
+<span class="nc" id="L280">                break;</span>
+            case 5: // Standing by the chest
+<span class="nc" id="L282">                player.giveExitKey();</span>
+<span class="nc" id="L283">                break;</span>
+            case 6: // Standing by the chest room door
+<span class="nc" id="L285">                Main.openChestRoomDoor();</span>
+<span class="nc" id="L286">                break;</span>
+            case 7: // Standing by the chest room door
+<span class="nc" id="L288">                Main.openExit();</span>
+<span class="nc" id="L289">                break;</span>
+            case 8: // Pickup red potion.
+<span class="nc" id="L291">                player.giveRedPotion();</span>
+<span class="nc" id="L292">                break;</span>
+            case 9:
+<span class="nc" id="L294">                System.out.println(&quot;Player position BEFORE: &quot; + player.getPosition());</span>
+<span class="nc" id="L295">                Main.loadNewMap(&quot;World/mapTwo.tmx&quot;, new Vector2(100, 80), true);</span>
+
+<span class="nc" id="L297">                System.out.println(&quot;Player position AFTER: &quot; + player.getPosition());</span>
+<span class="nc" id="L298">                break;</span>
+            case 10:
+<span class="nc" id="L300">                Main.openEntranceDoor();</span>
+<span class="nc" id="L301">                break;</span>
+            case 11:
+<span class="nc" id="L303">                player.giveEntranceKey();</span>
+<span class="nc" id="L304">                break;</span>
+            case 12:
+<span class="nc" id="L306">                Main.collectStar();</span>
+<span class="nc" id="L307">                break;</span>
+            case 13:
+<span class="nc" id="L309">                player.giveExitKey2();</span>
+<span class="nc" id="L310">                break;</span>
+            case 15:
+<span class="nc" id="L312">                player.giveBook();</span>
+<span class="nc" id="L313">                break;</span>
+            case 16:
+<span class="nc" id="L315">                Main.openExit2();</span>
+<span class="nc" id="L316">                break;</span>
+            case 18:
+<span class="nc" id="L318">                player.giveFakeKey();</span>
+<span class="nc" id="L319">                break;</span>
+            case 19:
+<span class="nc" id="L321">                TimerSystem.addTime();</span>
+<span class="nc" id="L322">                break;</span>
+            case 20:
+<span class="nc" id="L324">                player.activateSpeedBoost();</span>
+<span class="nc" id="L325">                break;</span>
+            case 21:
+<span class="nc" id="L327">                Main.activateTimeFreeze();</span>
+<span class="nc" id="L328">                break;</span>
+            case 22:
+<span class="nc" id="L330">                Main.activateAlcohol();</span>
+<span class="nc" id="L331">                break;</span>
+            default:
+                break;
+        }
+<span class="nc" id="L335">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>
